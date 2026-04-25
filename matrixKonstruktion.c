@@ -80,6 +80,42 @@ void print_matrix(SparseMatrix matrix) {
     printf("-----------------------------------------\n");
 }
 
+// Matrix als besser lesbare tabelle
+void print_matrix_tabelle(SparseMatrix matrix) {
+    printf("\n Visuelle Matrix (%dx%d) ---\n", matrix.n, matrix.n);
+    printf("     ");
+    for(int j = 0; j < matrix.n; j++) printf("%2d  ", j ); // Spaltennummerierung
+    printf("\n    -");
+    for(int j = 0; j < matrix.n; j++) printf("----");
+    printf("\n");
+
+    for (int i = 0; i < matrix.n; i++) {
+        printf("%2d | ", i); // Zeilennummer am Rand
+
+        int start = matrix.zeilenIndex[i];
+        int ende = matrix.zeilenIndex[i+1];
+
+        //Spalten iteration
+        for (int j = 0; j < matrix.n; j++) {
+            int eintragExistiert = 0;
+            //prüfen, ob im Eintrag in Zeile i und spalte j existiert
+            for (int k = start; k < ende; k++) {
+                if (matrix.spaltenIndex[k] == j) {
+                    eintragExistiert = 1;
+                    break;
+                }
+            }
+
+            if (eintragExistiert) {
+                printf(" X  "); // Eine Eins
+            } else {
+                printf("    "); // Eine Null / Leerstelle
+            }
+        }
+        printf("\n");
+    }
+
+}
 
 void loesche_matrix(SparseMatrix *m) {
     if (m->wert != NULL) free(m->wert);

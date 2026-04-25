@@ -20,7 +20,7 @@
 int main(void) {
 
     SparseMatrix meineMatrix = konstruiere_matrix();
-    print_matrix(meineMatrix);
+    print_matrix_tabelle(meineMatrix);
 
     //  Gauß-Algorithmus ..später
     // solve_gauss oder so

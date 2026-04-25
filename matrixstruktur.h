@@ -15,8 +15,10 @@ typedef struct {
 
     } SparseMatrix ;
 
+
     SparseMatrix konstruiere_matrix();
     void loesche_matrix( SparseMatrix *matrix);
     void print_matrix(SparseMatrix matrix);
+    void print_matrix_tabelle(SparseMatrix matrix);
 
 #endif //UNTITLED_MATRIXSTRUKTUR_H
