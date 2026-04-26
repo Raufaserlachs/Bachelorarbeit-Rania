@@ -6,7 +6,7 @@ SparseMatrix konstruiere_matrix() {
 
     SparseMatrix matrix;
     matrix.n = 16;
-    matrix.nne = 80;
+    matrix.nne = 100;
 
     //Speicher resverieren für Werte
     matrix.wert = (double *)malloc(matrix.nne * sizeof(double));
@@ -21,7 +21,12 @@ SparseMatrix konstruiere_matrix() {
     for (int b = 0; b < 4; b++) {
         int sprung = b * 4;
 
+
         for (int i = 0; i < 4; i++) {
+
+            int zeile = sprung + i;
+
+
             // erste zeile eines blockes setzen
             matrix.zeilenIndex[sprung + i] = zähler;
 
@@ -51,6 +56,37 @@ SparseMatrix konstruiere_matrix() {
                 matrix.spaltenIndex[zähler] = sprung + 2; matrix.wert[zähler] = 1.0; zähler++;
                 matrix.spaltenIndex[zähler] = sprung + 3; matrix.wert[zähler] = 1.0; zähler++;
             }
+
+            // NebenDiagonale (nach "rechts" in der Matrix)
+            if (zeile + 4 < 16) {
+                matrix.spaltenIndex[zähler] = zeile + 4;
+                matrix.wert[zähler] = 1.0;
+                zähler++;
+            }
+
+            // NebenDiagonale (nach "links" in der Matrix bzw unterdiagonale)
+            if (zeile - 4 >= 0) {
+                matrix.spaltenIndex[zähler] = zeile - 4;
+                matrix.wert[zähler] = 1.0;
+                zähler++;
+            }
+
+            // zweite Nebendiagonale (- 12 also links in)
+            if (zeile - 12 >= 0) {
+                matrix.spaltenIndex[zähler] = zeile - 12;
+                matrix.wert[zähler] = 1.0;
+                zähler++;
+            }
+
+            //zweote Nebendiagonale rechts (+12)
+            if (zeile + 12 < 16) {
+                matrix.spaltenIndex[zähler] = zeile + 12;
+                matrix.wert[zähler] = 1.0;
+                zähler++;
+            }
+
+
+
         }
 
     }
