@@ -82,7 +82,7 @@ SparseMatrix konstruiere_matrix() {
 
     SparseMatrix matrix;
     matrix.n = 16;
-    matrix.nne = 80;
+    matrix.nne = 100;
 
     //Speicher resverieren für Werte
     matrix.wert = (double *)malloc(matrix.nne * sizeof(double));
@@ -91,97 +91,94 @@ SparseMatrix konstruiere_matrix() {
     // Speicher für n + 1 Zeilen-Pointer (16 + 1 = 17)
     matrix.zeilenIndex = (int *)malloc((matrix.n + 1) * sizeof(int));
 
-
     int zähler = 0;
-    //Block 0-3
-    // ZEILE 0
-    matrix.zeilenIndex[0] = zähler;
 
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 0; zähler++;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 1; zähler++;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 3; zähler++;
-
-    // matrix.wert[zähler] = 1;
-    // matrix.spaltenIndex[zähler] = 4; zähler++;
-    //
-    // matrix.wert[zähler] = 1;
-    // matrix.spaltenIndex[zähler] = 12; zähler++;
-
-    // ZEILE 1
-    matrix.zeilenIndex[1] = zähler;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 0; zähler++;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 1; zähler++;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 2; zähler++;
-
-    // matrix.wert[zähler] = 1;
-    // matrix.spaltenIndex[zähler] = 5; zähler++;
-    //
-    // matrix.wert[zähler] = 1;
-    // matrix.spaltenIndex[zähler] = 13; zähler++;
-
-    // ZEILE 2
-    matrix.zeilenIndex[2] = zähler;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 1; zähler++;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 2; zähler++;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 3; zähler++;
-
-    // matrix.wert[zähler] = 1;
-    // matrix.spaltenIndex[zähler] = 6; zähler++;
-    //
-    // matrix.wert[zähler] = 1;
-    // matrix.spaltenIndex[zähler] = 14; zähler++;
+    //  Blöcke (0-3, 4-7, 8-11, 12-15)
+    for (int b = 0; b < 4; b++) {
+        int sprung = b * 4;
 
 
-    // ZEILE 3
-    matrix.zeilenIndex[3] = zähler;
+        for (int i = 0; i < 4; i++) {
 
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 0; zähler++;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 2; zähler++;
-
-    matrix.wert[zähler] = 1;
-    matrix.spaltenIndex[zähler] = 3; zähler++;
-
-    // matrix.wert[zähler] = 1;
-    // matrix.spaltenIndex[zähler] = 7; zähler++;
-    //
-    // matrix.wert[zähler] = 1;
-    // matrix.spaltenIndex[zähler] = 15; zähler++;
+            int zeile = sprung + i;
 
 
-    //  markiert Ende von Zeile 3 markieren!
-    matrix.zeilenIndex[4] = zähler;
-    // Für den Test füllen wir die restlichen row_ptr Einträge (4 bis 16)
-    // einfach mit dem aktuellen Zähler, damit das Programm nicht abstürzt.
-    for(int i = 5; i <= 16; i++) {
-        matrix.zeilenIndex[i] = zähler;
+            // erste zeile eines blockes setzen
+            matrix.zeilenIndex[sprung + i] = zähler;
+
+            // 3 einsen pro zeile
+            // sprung versetzt diagonal den block
+            //zeile 0 in jedem diagonalblock
+            if (i == 0) {
+                matrix.spaltenIndex[zähler] = sprung + 0; matrix.wert[zähler] = 1.0; zähler++;
+                matrix.spaltenIndex[zähler] = sprung + 1; matrix.wert[zähler] = 1.0; zähler++;
+                matrix.spaltenIndex[zähler] = sprung + 3; matrix.wert[zähler] = 1.0; zähler++;
+            }
+            //zeile 1 in jedem diagonalblock
+            else if (i == 1) {
+                matrix.spaltenIndex[zähler] = sprung + 0; matrix.wert[zähler] = 1.0; zähler++;
+                matrix.spaltenIndex[zähler] = sprung + 1; matrix.wert[zähler] = 1.0; zähler++;
+                matrix.spaltenIndex[zähler] = sprung + 2; matrix.wert[zähler] = 1.0; zähler++;
+            }
+            //zeile 2 in jedem diagonalblock
+            else if (i == 2) {
+                matrix.spaltenIndex[zähler] = sprung + 1; matrix.wert[zähler] = 1.0; zähler++;
+                matrix.spaltenIndex[zähler] = sprung + 2; matrix.wert[zähler] = 1.0; zähler++;
+                matrix.spaltenIndex[zähler] = sprung + 3; matrix.wert[zähler] = 1.0; zähler++;
+            }
+            //zeile 3 in jedem diagonalblock
+            else if (i == 3) {
+                matrix.spaltenIndex[zähler] = sprung + 0; matrix.wert[zähler] = 1.0; zähler++;
+                matrix.spaltenIndex[zähler] = sprung + 2; matrix.wert[zähler] = 1.0; zähler++;
+                matrix.spaltenIndex[zähler] = sprung + 3; matrix.wert[zähler] = 1.0; zähler++;
+            }
+
+            // NebenDiagonale (nach "rechts" in der Matrix)
+            if (zeile + 4 < 16) {
+                matrix.spaltenIndex[zähler] = zeile + 4;
+                matrix.wert[zähler] = 1.0;
+                zähler++;
+            }
+
+            // NebenDiagonale (nach "links" in der Matrix bzw unterdiagonale)
+            if (zeile - 4 >= 0) {
+                matrix.spaltenIndex[zähler] = zeile - 4;
+                matrix.wert[zähler] = 1.0;
+                zähler++;
+            }
+
+            // zweite Nebendiagonale (- 12 also links in)
+            if (zeile - 12 >= 0) {
+                matrix.spaltenIndex[zähler] = zeile - 12;
+                matrix.wert[zähler] = 1.0;
+                zähler++;
+            }
+
+            //zweote Nebendiagonale rechts (+12)
+            if (zeile + 12 < 16) {
+                matrix.spaltenIndex[zähler] = zeile + 12;
+                matrix.wert[zähler] = 1.0;
+                zähler++;
+            }
+
+
+
+        }
+
     }
+
+    matrix.zeilenIndex[16] = zähler; // Ende markieren
 
     return matrix;
 }
 
+
+
+
+
 void print_matrix(SparseMatrix matrix) {
-    printf("\n---  Matrix (Erste 4x4 Knoten) ---\n");
-    for (int i = 0; i < 4; i++) {
+    printf("\n---  Matrix (diagonale 4x4 block) ---\n");
+    for (int i = 0; i < 16; i++) {
         printf("Zeile %d: ", i);
 
         int start = matrix.zeilenIndex[i];
@@ -195,6 +192,42 @@ void print_matrix(SparseMatrix matrix) {
     printf("-----------------------------------------\n");
 }
 
+// Matrix als besser lesbare tabelle
+void print_matrix_tabelle(SparseMatrix matrix) {
+    printf("\n Visuelle Matrix (%dx%d) ---\n", matrix.n, matrix.n);
+    printf("     ");
+    for(int j = 0; j < matrix.n; j++) printf("%2d  ", j ); // Spaltennummerierung
+    printf("\n    -");
+    for(int j = 0; j < matrix.n; j++) printf("----");
+    printf("\n");
+
+    for (int i = 0; i < matrix.n; i++) {
+        printf("%2d | ", i); // Zeilennummer am Rand
+
+        int start = matrix.zeilenIndex[i];
+        int ende = matrix.zeilenIndex[i+1];
+
+        //Spalten iteration
+        for (int j = 0; j < matrix.n; j++) {
+            int eintragExistiert = 0;
+            //prüfen, ob im Eintrag in Zeile i und spalte j existiert
+            for (int k = start; k < ende; k++) {
+                if (matrix.spaltenIndex[k] == j) {
+                    eintragExistiert = 1;
+                    break;
+                }
+            }
+
+            if (eintragExistiert) {
+                printf(" X  "); // Eine Eins
+            } else {
+                printf("    "); // Eine Null / Leerstelle
+            }
+        }
+        printf("\n");
+    }
+
+}
 
 void loesche_matrix(SparseMatrix *m) {
     if (m->wert != NULL) free(m->wert);
