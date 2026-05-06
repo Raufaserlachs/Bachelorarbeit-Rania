@@ -28,9 +28,8 @@ int main(void) {
     print_flexible_matrix_tabelle(meineMatrix);
 
     // Speicher freigeben
-    free(meineMatrix.wert);
-    free(meineMatrix.spalten_indizes);
-    free(meineMatrix.zeilen_zeiger);
+    free(meineMatrix.eintraege);
+
 
     //  Gauß-Algorithmus ..später
     // solve_gauss oder so

@@ -7,20 +7,19 @@
 
 
     typedef struct {
-        //Dimmension
-        int d1;
-        int d2;
-        int d3;
-        int d4;
+        int i;      // Zeilen-Index
+        int j;      // Spalten-Index
+        int wert;   // Der Wert (1)
 
+    } MatrixEintrag;
+
+    typedef struct {
+        int d1, d2, d3, d4;
         int knotenAnzahl;
-        int nne; // Anzahl der Verbindungen (Kanten)
-        
-        //Array
-        // CSR-Arrays
-        int *wert;           // Gewichte
-        int *spalten_indizes;   // Welcher Knoten ist der Nachbar?
-        int *zeilen_zeiger;     // Wo fangen die Nachbarn eines Knotens an?
+        int nne;
+
+        //  ein Array aus Einträgen
+        MatrixEintrag *eintraege;
 
     } FlexibleSparseMatrix;
 

@@ -17,9 +17,7 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
 
     //Speicher reservieren
     // Speicher für die kantenanahl=nne
-    m.wert = malloc(m.nne *  sizeof(int));
-    m.spalten_indizes = malloc(m.nne *  sizeof(int));
-    m.zeilen_zeiger = malloc((m.knotenAnzahl +1) * sizeof(int));
+    m.eintraege = malloc(m.nne * sizeof(MatrixEintrag));
 
 
     //Einträge
@@ -37,11 +35,8 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
                     // Linearen Index des aktuellen Knotens (der aktuellen Zeile) berechnen
                     int zeilen_index = i + (j * d1) + (k * d1 * d2) + (l * d1 * d2 * d3);
 
-                    // Zeilenzeiger setzen: Hier beginnen die 8 Nachbarn dieses Knotens
-                    m.zeilen_zeiger[zeilen_index] = aktueller_eintrag_im_array;
 
-
-                    // Hilfs-Array für die Offsets der 8 Nachbarn (Periodische Randbedingungen)
+                    // Hilfs-Array für die 8 Nachbarn
                     // i Position auf der X-Achse (links/rechts)
                     // j Position auf der Y-Achse (oben/unten)
                     // k Position auf der Z-Achse (vorne/hinten "Tiefe")
@@ -60,10 +55,11 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
                     nachbarn[6] = i + (j * d1) + (k * d1 * d2) + (((l + 1) % d4) * d1 * d2 * d3); // Nächster Cube
                     nachbarn[7] = i + (j * d1) + (k * d1 * d2) + (((l - 1 + d4) % d4) * d1 * d2 * d3); // Vorheriger Cube
 
-                    // Die 8 Nachbarn in die CRS-Struktur schreiben
+                    // Die 8 Nachbarn in das array schreiben
                     for (int n = 0; n < 8; n++) {
-                        m.wert[aktueller_eintrag_im_array] = 1; // Gewicht der Kante
-                        m.spalten_indizes[aktueller_eintrag_im_array] = nachbarn[n];
+                        m.eintraege[aktueller_eintrag_im_array].i = zeilen_index; // ZEILE
+                        m.eintraege[aktueller_eintrag_im_array].j = nachbarn[n];  // SPALTE
+                        m.eintraege[aktueller_eintrag_im_array].wert = 1;         // WERT
                         aktueller_eintrag_im_array++;
                     }
                 }
@@ -71,8 +67,7 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
         }
 
     }
-    // Der letzte Zeilenzeiger zeigt auf das Ende der Daten
-    m.zeilen_zeiger[m.knotenAnzahl] = m.nne;
+
     return m;
 
 }
@@ -81,7 +76,7 @@ void print_flexible_matrix_tabelle(FlexibleSparseMatrix m) {
     // Knotenanahl für x y matrix
     int n = m.knotenAnzahl;
 
-    //  Nur drucken, wenn die Matrix nicht zu riesig ist!
+    //  Nur drucken, wenn die Matrix nicht zu riesig ist
     if (n > 100) {
         printf("\n Matrix ist mit zu groß für die Tabellenansicht! ---\n");
         return;
@@ -99,26 +94,22 @@ void print_flexible_matrix_tabelle(FlexibleSparseMatrix m) {
     for (int i = 0; i < n; i++) {
         printf("%2d | ", i); // Zeilennummer am Rand
 
-        int start = m.zeilen_zeiger[i];
-        int ende = m.zeilen_zeiger[i+1];
-
-        //  jede mögliche Spalte j durchgehen
         for (int j = 0; j < n; j++) {
             int hatNachbar = 0;
 
-            // schauen nach, ob Spalte j in Zeile i vorkommt
-            for (int k = start; k < ende; k++) {
-                if (m.spalten_indizes[k] == j) {
+            // suche nur nach Einträgen, die zur aktuellen Zeile i gehören
+            for (int k = 0; k < m.nne; k++) {
+
+                // wenn Eintrag für Zeile i und Spalte j gefunden
+                if (m.eintraege[k].i == i && m.eintraege[k].j == j) {
                     hatNachbar = 1;
                     break;
                 }
+                // wenn nächsten Zeileneinträge erreicht,  abbrechen
+                if (m.eintraege[k].i > i) break;
             }
 
-            if (hatNachbar) {
-                printf(" X "); // Hier ist eine Kante/Eintrag
-            } else {
-                printf(" . "); // Keine Keine Kante/eintrag
-            }
+            if (hatNachbar) printf(" X "); else printf(" . ");
         }
         printf("\n");
     }
