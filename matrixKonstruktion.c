@@ -12,7 +12,7 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
     m.knotenAnzahl = m.d1 * m.d2 * m.d3 * m.d4;
 
     // Jeder Knoten hat genau 8 Verbindungen
-    m.nne = m.knotenAnzahl * 8;
+    m.nne = m.knotenAnzahl * 9;
 
 
     //Speicher reservieren
@@ -36,13 +36,13 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
                     int zeilen_index = i + (j * d1) + (k * d1 * d2) + (l * d1 * d2 * d3);
 
 
-                    // Hilfs-Array für die 8 Nachbarn
+                    // Hilfs-Array für die 9 Nachbarn
                     // i Position auf der X-Achse (links/rechts)
                     // j Position auf der Y-Achse (oben/unten)
                     // k Position auf der Z-Achse (vorne/hinten "Tiefe")
                     // l Pos in der vierten Dimension
 
-                    int nachbarn[8];
+                    int nachbarn[9];
                     nachbarn[0] = ((i + 1) % d1) + (j * d1) + (k * d1 * d2) + (l * d1 * d2 * d3); // Rechts
                     nachbarn[1] = ((i - 1 + d1) % d1) + (j * d1) + (k * d1 * d2) + (l * d1 * d2 * d3); // Links
 
@@ -55,8 +55,10 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
                     nachbarn[6] = i + (j * d1) + (k * d1 * d2) + (((l + 1) % d4) * d1 * d2 * d3); // Nächster Cube
                     nachbarn[7] = i + (j * d1) + (k * d1 * d2) + (((l - 1 + d4) % d4) * d1 * d2 * d3); // Vorheriger Cube
 
-                    // Die 8 Nachbarn in das array schreiben
-                    for (int n = 0; n < 8; n++) {
+                    nachbarn[8] = zeilen_index; //verbindung zu sich selbst
+
+                    // Die 99 Nachbarn in das array schreiben
+                    for (int n = 0; n < 9; n++) {
                         m.eintraege[aktueller_eintrag_im_array].i = zeilen_index; // ZEILE
                         m.eintraege[aktueller_eintrag_im_array].j = nachbarn[n];  // SPALTE
                         m.eintraege[aktueller_eintrag_im_array].wert = 1;         // WERT
@@ -76,11 +78,11 @@ void print_flexible_matrix_tabelle(FlexibleSparseMatrix m) {
     // Knotenanahl für x y matrix
     int n = m.knotenAnzahl;
 
-    //  Nur drucken, wenn die Matrix nicht zu riesig ist
-    if (n > 100) {
-        printf("\n Matrix ist mit zu groß für die Tabellenansicht! ---\n");
-        return;
-    }
+    // //  Nur drucken, wenn die Matrix nicht zu riesig ist
+    // if (n > 100) {
+    //     printf("\n Matrix ist mit zu groß für die Tabellenansicht! ---\n");
+    //     return;
+    // }
 
 
 
