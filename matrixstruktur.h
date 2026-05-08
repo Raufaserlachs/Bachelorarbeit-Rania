@@ -9,7 +9,7 @@
     typedef struct {
         int i;      // Zeilen-Index
         int j;      // Spalten-Index
-        int wert;   // Der Wert (1)
+        double wert;   // Der Wert (1)
 
     } MatrixEintrag;
 
