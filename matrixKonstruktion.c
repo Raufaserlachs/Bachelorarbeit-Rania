@@ -76,12 +76,17 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
                         aktueller_eintrag_im_array++;
                     }
 
+
                     //Diagonale 9. nachbar den wert schreiben
                     //diagonaldominanz berechnen
                     m.eintraege[aktueller_eintrag_im_array].i = zeilen_index;
                     m.eintraege[aktueller_eintrag_im_array].j = zeilen_index;
-                    m.eintraege[aktueller_eintrag_im_array].wert = zeilen_summe + 10.0;
+                    m.eintraege[aktueller_eintrag_im_array].wert = (double)rand() / RAND_MAX + 10.0;
                     aktueller_eintrag_im_array++;
+                    //zeilensummme wegschmeissen
+                    //stattdessen direkt wert +8
+                    //nur alle nachkommenden knoten nur eintragen
+                    
 
 
 
@@ -114,6 +119,7 @@ void print_flexible_matrix_tabelle(FlexibleSparseMatrix m) {
     for(int j = 0; j < n; j++) printf("---");
     printf("\n");
 
+    //nachbar check falsch für matrizen mit d =1
     for (int i = 0; i < n; i++) {
         printf("%2d | ", i); // Zeilennummer am Rand
 
