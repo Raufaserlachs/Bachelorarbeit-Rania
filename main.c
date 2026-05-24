@@ -21,18 +21,28 @@
 int main(void) {
 
 
-    // Matrix konstruieren
-    FlexibleSparseMatrix meineMatrix = konstruiere_flexible_matrix(3, 3, 3, 3);
+    // // Matrix konstruieren
+     FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2);
+    //
+    // // Tabellen-Ansicht für das Muster
+    // print_flexible_matrix_tabelle(meineMatrix);
+    //
+    // // Speicher freigeben
+     free(meinesparseMatrix.eintraege);
 
-    // Tabellen-Ansicht für das Muster
-    print_flexible_matrix_tabelle(meineMatrix);
 
-    // Speicher freigeben
-    free(meineMatrix.eintraege);
+    // Matrix Konvertieren
+    DichteMatrix meineMatrix = konvertiere_zu_dicht(meinesparseMatrix);
 
+    printf("VOR DEM GAUSS:\n");
+    drucke_dichte_matrix(meineMatrix);
 
-    //  Gauß-Algorithmus ..später
-    // solve_gauss oder so
+    bringe_in_zeilenstufenform(meineMatrix);
+
+    // Nachher-Zustand anschauen
+    printf("\nNACH DEM GAUSS (Zeilenstufenform):\n");
+    drucke_dichte_matrix(meineMatrix);
+
 
 
     printf("Speicher erfolgreich bereinigt.\n");

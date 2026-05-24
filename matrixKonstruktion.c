@@ -81,7 +81,7 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4)
                     //diagonaldominanz berechnen
                     m.eintraege[aktueller_eintrag_im_array].i = zeilen_index;
                     m.eintraege[aktueller_eintrag_im_array].j = zeilen_index;
-                    m.eintraege[aktueller_eintrag_im_array].wert = (double)rand() / RAND_MAX + 10.0;
+                    m.eintraege[aktueller_eintrag_im_array].wert = (double)rand() / RAND_MAX + 8.0;
                     aktueller_eintrag_im_array++;
                     //zeilensummme wegschmeissen
                     //stattdessen direkt wert +8

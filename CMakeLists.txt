@@ -5,4 +5,5 @@ set(CMAKE_C_STANDARD 17)
 
 add_executable(untitled main.c
         matrixstruktur.h
-        matrixKonstruktion.c)
+        matrixKonstruktion.c
+        gausssolver.c)
