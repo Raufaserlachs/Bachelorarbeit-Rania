@@ -35,7 +35,11 @@
     } DichteMatrix;
 
     DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse);
-    void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix);
+    void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]);
     void drucke_dichte_matrix(DichteMatrix dichteMatrix);
+    void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]);
+    DichteMatrix kopiere_matrix(DichteMatrix A);
+    void freigabe_dichte_matrix(DichteMatrix A);
+    void testlauf(DichteMatrix A);
 
 #endif //UNTITLED_MATRIXSTRUKTUR_H

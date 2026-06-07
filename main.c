@@ -19,34 +19,26 @@
 //0, 0, 0, 1, 0, 0, 0, 0, 0, 0,  0,  1,  1,  0,  1,  1,
 
 int main(void) {
+    // 1. Matrix konstruieren (die Datenquelle)
+    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2);
 
-
-    // // Matrix konstruieren
-     FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2);
-    //
-    // // Tabellen-Ansicht für das Muster
-    // print_flexible_matrix_tabelle(meineMatrix);
-    //
-    // // Speicher freigeben
-     free(meinesparseMatrix.eintraege);
-
-
-    // Matrix Konvertieren
+    // 2. Matrix Konvertieren (in eine DichteMatrix für den Solver)
     DichteMatrix meineMatrix = konvertiere_zu_dicht(meinesparseMatrix);
 
-    printf("VOR DEM GAUSS:\n");
+    // 3. Vorher-Zustand zeigen
+    printf("VOR DEM GAUSS:");
     drucke_dichte_matrix(meineMatrix);
 
-    bringe_in_zeilenstufenform(meineMatrix);
+    // 4. Testlauf starten (Hier passiert alles: Kopie, Gauß, Rücksubstitution, Residuum)
+    // Deine testlauf-Funktion erledigt jetzt das "schwere Heben"
+    testlauf(meineMatrix);
 
-    // Nachher-Zustand anschauen
-    printf("\nNACH DEM GAUSS (Zeilenstufenform):\n");
-    drucke_dichte_matrix(meineMatrix);
-
-
+    // 5. Speicher aufräumen
+    // Wichtig: Erst die Einträge der Sparse, dann die DichteMatrix freigeben
+    free(meinesparseMatrix.eintraege);
+    freigabe_dichte_matrix(meineMatrix);
 
     printf("Speicher erfolgreich bereinigt.\n");
 
     return 0;
-
 }
