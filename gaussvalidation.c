@@ -74,7 +74,17 @@ void berechne_residuum(DichteMatrix A_original, double *x_berechnet, double *b_o
 
     // Fehlergröße ausgeben (NRM)
     double fehler = berechne_norm(r, N);
+
+    // Validierungsschwelle: 1e-12
+    double schwelle = 1e-12;
+
     printf("Das Residuum (Fehler) ist: %e\n", fehler);
+
+    if (fehler < schwelle) {
+        printf("[Erfolg] Die Lösung ist numerisch stabil und validiert.\n");
+    } else {
+        printf("[Warnung] Der Fehler ist über der Toleranzgrenze!\n");
+    }
 
 
 
@@ -101,15 +111,24 @@ void testlauf(DichteMatrix A_original) {
     double b_work[N];
     for(int i = 0; i < N; i++) b_work[i] = b_original[i];
 
-    // 4. Den eigentlichen Löser rufen
+    //  Löser rufen
     bringe_in_zeilenstufenform(A_work, b_work);
-    loese_mit_ruecksubstitution(A_work, b_work, x_berechnet);
+    //  MATRIZEN-ZUSTAND AUSGEBEN:
+    printf("\nZustand nach der Zeilenstufenform (ZSF):");
+    drucke_dichte_matrix(A_work);
 
-    // 5. Validierung: Wie gut ist unser x_berechnet wirklich?
+    loese_mit_ruecksubstitution(A_work, b_work, x_berechnet);
+    // LÖSUNG X AUSGEBEN:
+    printf("\nBerechneter Vektor x (Sollte ca. 1.0 sein):\n");
+    for(int i = 0; i < N; i++) {
+        printf("x[%d] = %8.4f\n", i, x_berechnet[i]);
+    }
+
+    // Validierung , residuumm bzw x testen
     printf("[Validator] Starte Residuum-Test...\n");
     berechne_residuum(A_original, x_berechnet, b_original);
 
-    // 6. Aufräumen
+    // Aufräumen
     freigabe_dichte_matrix(A_work);
 }
 
