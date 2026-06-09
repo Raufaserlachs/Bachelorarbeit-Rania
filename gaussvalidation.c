@@ -121,7 +121,7 @@ void testlauf(DichteMatrix A_original) {
     // LÖSUNG X AUSGEBEN:
     printf("\nBerechneter Vektor x (Sollte ca. 1.0 sein):\n");
     for(int i = 0; i < N; i++) {
-        printf("x[%d] = %8.4f\n", i, x_berechnet[i]);
+        printf("x[%d] = %20.18f\n", i, x_berechnet[i]);
     }
 
     // Validierung , residuumm bzw x testen

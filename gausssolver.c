@@ -179,4 +179,4 @@ void freigabe_dichte_matrix(DichteMatrix A) {
 
 //gen mat ( d1 d2 d3 d4 und k) für bblocke
 //mit RB formAT
-//DÜNNBESETZER GAUSS ..... wo nicht null elemente und dannhandlung nur wo nicht null auch in zukunft
+//DÜNNBESETZER GAUSS ..... wo nicht null elemente und dann handlung nur wo nicht null auch in zukunft

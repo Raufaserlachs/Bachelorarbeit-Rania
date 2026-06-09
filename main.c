@@ -18,6 +18,7 @@
 //0, 0, 1, 0, 0, 0, 0, 0, 0, 0,  1,  0,  0,  1,  1,  1,
 //0, 0, 0, 1, 0, 0, 0, 0, 0, 0,  0,  1,  1,  0,  1,  1,
 
+// effiziente Lösung linearer Gleichungssysteme
 int main(void) {
     // Matrix konstruieren
     FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2);
