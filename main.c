@@ -21,7 +21,7 @@
 // effiziente Lösung linearer Gleichungssysteme
 int main(void) {
     // Matrix konstruieren
-    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2);
+    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2,4);
 
     // Matrix Konvertieren
     DichteMatrix meineMatrix = konvertiere_zu_dicht(meinesparseMatrix);

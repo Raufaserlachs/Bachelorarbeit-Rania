@@ -9,30 +9,25 @@
 
 
 DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse) {
-
     DichteMatrix dichteMatrix;
-    dichteMatrix.N = sparse.knotenAnzahl;
+    // Die Dimension ist N * B!
+    dichteMatrix.N = sparse.knotenAnzahl * sparse.B;
 
-
-    // Speicher für Zeilen-Pointer reservieren
     dichteMatrix.daten = malloc(dichteMatrix.N * sizeof(double *));
-
-    // Speicher für jede einzelne Zeile reservieren
     for (int i = 0; i < dichteMatrix.N; i++) {
-
-        // calloc holt Speicher und überschreibt  alles mit 0
         dichteMatrix.daten[i] = calloc(dichteMatrix.N, sizeof(double));
     }
 
-    //NNE Werte aus der Sparse-Matrix übertragen
     for (int k = 0; k < sparse.nne; k++) {
-        int r = sparse.eintraege[k].i; // Reihe
-        int s = sparse.eintraege[k].j; // Spalte
-        dichteMatrix.daten[r][s] = sparse.eintraege[k].wert;
+        int r = sparse.eintraege[k].i;
+        int s = sparse.eintraege[k].j;
+
+        // Sicherheitshalber prüfen, ob der Index im Bereich liegt
+        if (r < dichteMatrix.N && s < dichteMatrix.N) {
+            dichteMatrix.daten[r][s] = sparse.eintraege[k].wert;
+        }
     }
-
     return dichteMatrix;
-
 }
 
 //Änderung: Transformationsvektor

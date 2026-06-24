@@ -18,6 +18,8 @@
         int d1, d2, d3, d4;
         int knotenAnzahl;
         int nne;
+        int B;
+
 
         //  ein Array aus Einträgen
         MatrixEintrag *eintraege;
@@ -25,7 +27,7 @@
     } FlexibleSparseMatrix;
 
 
-    FlexibleSparseMatrix konstruiere_flexible_matrix( int d1, int d2, int d3, int d4 );
+    FlexibleSparseMatrix konstruiere_flexible_matrix( int d1, int d2, int d3, int d4, int B);
     void print_flexible_matrix_tabelle(FlexibleSparseMatrix m);
 
     //für eine dichte matrix
