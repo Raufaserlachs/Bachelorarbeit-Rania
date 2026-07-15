@@ -6,6 +6,7 @@
 #include <time.h>
 #include <math.h>
 #include "Matrixstruktur.h"
+#include <string.h>
 
 
 DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse) {
@@ -28,7 +29,56 @@ DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse) {
         }
     }
     return dichteMatrix;
+
 }
+
+
+
+
+// Hilfsfunktion zum Sortieren der Einträge (für korrektes CSR)
+int compare_eintraege(const void *a, const void *b) {
+    MatrixEintrag *e1 = (MatrixEintrag *)a;
+    MatrixEintrag *e2 = (MatrixEintrag *)b;
+    if (e1->i != e2->i) return e1->i - e2->i;
+    return e1->j - e2->j;
+}
+
+CSRMatrix konvertiere_zu_csr(FlexibleSparseMatrix sparse) {
+    CSRMatrix csr;
+    csr.N = sparse.knotenAnzahl * sparse.B;
+    csr.nnz = sparse.nne; // Annahme: Alle Einträge sind vorhanden
+
+    // 1. Sortiere Einträge nach Zeile, dann Spalte
+    qsort(sparse.eintraege, sparse.nne, sizeof(MatrixEintrag), compare_eintraege);
+
+    // 2. Speicher allokieren
+    csr.val = malloc(csr.nnz * sizeof(double));
+    csr.ci = malloc(csr.nnz * sizeof(int));
+    csr.rst = calloc(csr.N + 1, sizeof(int)); // +1 für den End-Pointer der letzten Zeile
+
+    // 3. Befüllen
+    for (int k = 0; k < csr.nnz; k++) {
+        csr.val[k] = sparse.eintraege[k].wert;
+        csr.ci[k] = sparse.eintraege[k].j;
+        // Inkrementiere den Zeilenzähler für jeden Eintrag
+        csr.rst[sparse.eintraege[k].i + 1]++;
+    }
+
+    // 4. Kumulative Summe für rst (Row Start Pointer) bilden
+    for (int i = 0; i < csr.N; i++) {
+        csr.rst[i + 1] += csr.rst[i];
+    }
+
+    return csr;
+}
+
+void freigabe_csr_matrix(CSRMatrix A) {
+    free(A.val);
+    free(A.ci);
+    free(A.rst);
+}
+
+
 
 //Änderung: Transformationsvektor
 //Funktion für reine ZSF also Gauss vorwärts
@@ -121,6 +171,56 @@ void drucke_dichte_matrix(DichteMatrix dichteMatrix) {
     }
     printf("--------------------------------------------------------------------------------\n\n");
 }
+
+
+
+
+void drucke_csr_matrix(CSRMatrix A) {
+    printf("\n--- CSR Matrix (%dx%d) ---\n", A.N, A.N);
+
+    // Header
+    printf("     ");
+    for (int j = 0; j < A.N; j++) printf("  [%2d]  ", j);
+    printf("\n     ");
+    for (int j = 0; j < A.N; j++) printf("--------");
+    printf("\n");
+
+    // Zeilenweise durchlaufen
+    for (int i = 0; i < A.N; i++) {
+        printf("%2d | ", i);
+
+        // Suche in der gesamten Zeile nach Spalte j
+        for (int j = 0; j < A.N; j++) {
+            double wert = 0.0;
+            int gefunden = 0;
+
+            // Durchsuche nur den Bereich dieser Zeile in CSR
+            for (int k = A.rst[i]; k < A.rst[i+1]; k++) {
+                if (A.ci[k] == j) {
+                    wert = A.val[k];
+                    gefunden = 1;
+                    break;
+                }
+            }
+
+            if (gefunden) {
+                printf("%8.2f", wert);
+            } else {
+                printf("    .   ");
+            }
+        }
+        printf("\n");
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
 //pseudo

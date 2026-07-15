@@ -7,4 +7,5 @@ add_executable(untitled main.c
         matrixstruktur.h
         matrixKonstruktion.c
         gausssolver.c
-        gaussvalidation.c)
+        gaussvalidation.c
+        unitTest.c)

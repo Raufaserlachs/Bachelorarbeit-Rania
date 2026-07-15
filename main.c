@@ -20,24 +20,33 @@
 
 // effiziente Lösung linearer Gleichungssysteme
 int main(void) {
+
+
     // Matrix konstruieren
     FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2,4);
 
     // Matrix Konvertieren
-    DichteMatrix meineMatrix = konvertiere_zu_dicht(meinesparseMatrix);
+    CSRMatrix meineMatrix = konvertiere_zu_csr(meinesparseMatrix);
 
     // Vorher-Zustand zeigen
     printf("VOR DEM GAUSS:");
-    drucke_dichte_matrix(meineMatrix);
+    drucke_csr_matrix(meineMatrix);
+    freigabe_csr_matrix(meineMatrix);
 
     // Testlauf starten
-    testlauf(meineMatrix);
+    //testlauf(meineMatrix);
 
-    // Speicher aufräumen
+    //Speicher aufräumen
     free(meinesparseMatrix.eintraege);
-    freigabe_dichte_matrix(meineMatrix);
+
+
 
     printf("Speicher erfolgreich bereinigt.\n");
+
+
+
+
+
 
     return 0;
 }

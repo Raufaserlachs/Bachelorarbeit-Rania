@@ -13,6 +13,21 @@
 
     } MatrixEintrag;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //dünnbesetzte matrix und array aus einträgen
     typedef struct {
         int d1, d2, d3, d4;
@@ -25,6 +40,27 @@
         MatrixEintrag *eintraege;
 
     } FlexibleSparseMatrix;
+
+
+
+
+    // CSR Datenstruktur
+    typedef struct {
+        int N;              // Dimension der Matrix (N x N)
+        int nnz;            // Anzahl der Nicht-Null-Elemente
+        double *val;        // Werte der Nicht-Null-Elemente
+        int *ci;            // Spaltenindizes
+        int *rst;           // Row Start (Größe N + 1)
+    } CSRMatrix;
+
+
+    CSRMatrix konvertiere_zu_csr(FlexibleSparseMatrix sparse);
+    void freigabe_csr_matrix(CSRMatrix A);
+    void drucke_csr_matrix(CSRMatrix A);
+
+
+
+
 
 
     FlexibleSparseMatrix konstruiere_flexible_matrix( int d1, int d2, int d3, int d4, int B);
@@ -43,5 +79,10 @@
     DichteMatrix kopiere_matrix(DichteMatrix A);
     void freigabe_dichte_matrix(DichteMatrix A);
     void testlauf(DichteMatrix A);
+    void test_csr_konvertierung();
+
+
+
+
 
 #endif //UNTITLED_MATRIXSTRUKTUR_H
