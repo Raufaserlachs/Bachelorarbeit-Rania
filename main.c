@@ -13,11 +13,13 @@ int main(void) {
     FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2,4);
 
     // Matrix Konvertieren
-    CSRMatrix meineMatrix = konvertiere_zu_csr(meinesparseMatrix);
+    CSRMatrix meineMatrix = konvertiere_zu_optimierten_csr(meinesparseMatrix);
 
     // Vorher-Zustand zeigen
     printf("VOR DEM GAUSS:");
-    drucke_csr_matrix(meineMatrix);
+
+    drucke_optimierte_csr(meineMatrix);
+    // drucke_csr_matrix(meineMatrix);
     freigabe_csr_matrix(meineMatrix);
 
     // Testlauf starten

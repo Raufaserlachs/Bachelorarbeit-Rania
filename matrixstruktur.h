@@ -82,6 +82,9 @@
     void freigabe_dichte_matrix(DichteMatrix A);
     void testlauf(DichteMatrix A);
     void test_csr_konvertierung();
+    CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse);
+    void drucke_optimierte_csr(CSRMatrix A);
+    void freigabe_csr_matrix(CSRMatrix A);
 
 
 
