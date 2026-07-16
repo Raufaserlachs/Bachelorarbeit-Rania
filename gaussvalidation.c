@@ -3,9 +3,9 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>   // Für Zufallszahlen
 #include <math.h>
 #include "matrixstruktur.h"
+#include <string.h>
 
 
 
@@ -134,3 +134,16 @@ void testlauf(DichteMatrix A_original) {
 
 
 
+// Matrix original originalkopie
+DichteMatrix kopiere_matrix(DichteMatrix A) {
+    DichteMatrix original_kopie;
+    original_kopie.N = A.N;
+    original_kopie.daten = malloc(original_kopie.N * sizeof(double *));
+    for (int i = 0; i < original_kopie.N; i++) {
+        original_kopie.daten[i] = malloc(original_kopie.N * sizeof(double));
+        for (int j = 0; j < original_kopie.N; j++) {
+            original_kopie.daten[i][j] = A.daten[i][j];
+        }
+    }
+    return original_kopie;
+}

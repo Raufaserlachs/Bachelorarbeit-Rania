@@ -8,4 +8,9 @@ add_executable(untitled main.c
         matrixKonstruktion.c
         gausssolver.c
         gaussvalidation.c
-        unitTest.c)
+        unitTest.c
+        gaussValidationCSR.c
+        matrixKonventierer.c
+        matrixDrucker.c
+        speicherFreigabe.c
+)

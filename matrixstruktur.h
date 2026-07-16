@@ -59,12 +59,14 @@
     void drucke_csr_matrix(CSRMatrix A);
 
 
+    double berechne_norm(double *r, int N);
+
 
 
 
 
     FlexibleSparseMatrix konstruiere_flexible_matrix( int d1, int d2, int d3, int d4, int B);
-    void print_flexible_matrix_tabelle(FlexibleSparseMatrix m);
+    void drucke_flexible_matrix_tabelle(FlexibleSparseMatrix m);
 
     //für eine dichte matrix
     typedef struct {

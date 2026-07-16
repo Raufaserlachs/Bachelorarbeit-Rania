@@ -1,82 +1,10 @@
 //
 // Created by Nia on 15.05.26.
 //
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
+
 #include "Matrixstruktur.h"
-#include <string.h>
 
 
-DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse) {
-    DichteMatrix dichteMatrix;
-    // Die Dimension ist N * B!
-    dichteMatrix.N = sparse.knotenAnzahl * sparse.B;
-
-    dichteMatrix.daten = malloc(dichteMatrix.N * sizeof(double *));
-    for (int i = 0; i < dichteMatrix.N; i++) {
-        dichteMatrix.daten[i] = calloc(dichteMatrix.N, sizeof(double));
-    }
-
-    for (int k = 0; k < sparse.nne; k++) {
-        int r = sparse.eintraege[k].i;
-        int s = sparse.eintraege[k].j;
-
-        // Sicherheitshalber prüfen, ob der Index im Bereich liegt
-        if (r < dichteMatrix.N && s < dichteMatrix.N) {
-            dichteMatrix.daten[r][s] = sparse.eintraege[k].wert;
-        }
-    }
-    return dichteMatrix;
-
-}
-
-
-
-
-// Hilfsfunktion zum Sortieren der Einträge (für korrektes CSR)
-int compare_eintraege(const void *a, const void *b) {
-    MatrixEintrag *e1 = (MatrixEintrag *)a;
-    MatrixEintrag *e2 = (MatrixEintrag *)b;
-    if (e1->i != e2->i) return e1->i - e2->i;
-    return e1->j - e2->j;
-}
-
-CSRMatrix konvertiere_zu_csr(FlexibleSparseMatrix sparse) {
-    CSRMatrix csr;
-    csr.N = sparse.knotenAnzahl * sparse.B;
-    csr.nnz = sparse.nne; // Annahme: Alle Einträge sind vorhanden
-
-    // 1. Sortiere Einträge nach Zeile, dann Spalte
-    qsort(sparse.eintraege, sparse.nne, sizeof(MatrixEintrag), compare_eintraege);
-
-    // 2. Speicher allokieren
-    csr.val = malloc(csr.nnz * sizeof(double));
-    csr.ci = malloc(csr.nnz * sizeof(int));
-    csr.rst = calloc(csr.N + 1, sizeof(int)); // +1 für den End-Pointer der letzten Zeile
-
-    // 3. Befüllen
-    for (int k = 0; k < csr.nnz; k++) {
-        csr.val[k] = sparse.eintraege[k].wert;
-        csr.ci[k] = sparse.eintraege[k].j;
-        // Inkrementiere den Zeilenzähler für jeden Eintrag
-        csr.rst[sparse.eintraege[k].i + 1]++;
-    }
-
-    // 4. Kumulative Summe für rst (Row Start Pointer) bilden
-    for (int i = 0; i < csr.N; i++) {
-        csr.rst[i + 1] += csr.rst[i];
-    }
-
-    return csr;
-}
-
-void freigabe_csr_matrix(CSRMatrix A) {
-    free(A.val);
-    free(A.ci);
-    free(A.rst);
-}
 
 
 
@@ -105,134 +33,7 @@ void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]) {
 }
 
 
-// void drucke_dichte_matrix(DichteMatrix dichteMatrix) {
-//     printf("--- Matrix (%dx%d) ---\n", dichteMatrix.N, dichteMatrix.N);
-//
-//     for (int i = 0; i < dichteMatrix.N; i++) {
-//         for (int j = 0; j < dichteMatrix.N; j++) {
-//             if (dichteMatrix.daten[i][j] == 0) {
-//                 printf("   X  ");
-//             }
-//             else printf("%7.2f ", dichteMatrix.daten[i][j]);
-//         }
-//         printf("\n");
-//     }
-//     printf("---------------------\n");
-//
 
-// MMatrix original originalkopie
-DichteMatrix kopiere_matrix(DichteMatrix A) {
-    DichteMatrix original_kopie;
-    original_kopie.N = A.N;
-    original_kopie.daten = malloc(original_kopie.N * sizeof(double *));
-    for (int i = 0; i < original_kopie.N; i++) {
-        original_kopie.daten[i] = malloc(original_kopie.N * sizeof(double));
-        for (int j = 0; j < original_kopie.N; j++) {
-            original_kopie.daten[i][j] = A.daten[i][j];
-        }
-    }
-    return original_kopie;
-}
-
-void drucke_dichte_matrix(DichteMatrix dichteMatrix) {
-    printf("\n--- Matrix (%dx%d) ---\n", dichteMatrix.N, dichteMatrix.N);
-
-    // Spaltennummern oben drucken
-    printf("     ");
-    for (int j = 0; j < dichteMatrix.N; j++) {
-        // %6d mit zwei Leerzeichen drumherum =  8 Zeichen Breite
-        printf("  [%2d]  ", j);
-    }
-    printf("\n     ");
-    for (int j = 0; j < dichteMatrix.N; j++) {
-        printf("--------"); // 8 Bindestriche pro Spalte
-    }
-    printf("\n");
-
-    // Schwellenwert für numerische Nullen alles kleiner ist quasi ein rundungsfehler
-    double epsilon = 1e-12;
-
-    // Zeilen durchlaufen
-    for (int i = 0; i < dichteMatrix.N; i++) {
-        printf("%2d | ", i);
-
-        for (int j = 0; j < dichteMatrix.N; j++) {
-            if (fabs(dichteMatrix.daten[i][j]) < epsilon) {
-                // Exakt 8 Zeichen breit: 4 Leerzeichen, Punkt, 3 Leerzeichen
-                printf("    .   ");
-            }
-            else {
-                // %8.2f reserviert fest 8 Zeichen Gesamtbreite.
-                // Das Vorzeichen '-' wird innerhalb dieser 8 Zeichen platziert.
-                printf("%8.2f", dichteMatrix.daten[i][j]);
-            }
-        }
-        printf("\n");
-    }
-    printf("--------------------------------------------------------------------------------\n\n");
-}
-
-
-
-
-void drucke_csr_matrix(CSRMatrix A) {
-    printf("\n--- CSR Matrix (%dx%d) ---\n", A.N, A.N);
-
-    // Header
-    printf("     ");
-    for (int j = 0; j < A.N; j++) printf("  [%2d]  ", j);
-    printf("\n     ");
-    for (int j = 0; j < A.N; j++) printf("--------");
-    printf("\n");
-
-    // Zeilenweise durchlaufen
-    for (int i = 0; i < A.N; i++) {
-        printf("%2d | ", i);
-
-        // Suche in der gesamten Zeile nach Spalte j
-        for (int j = 0; j < A.N; j++) {
-            double wert = 0.0;
-            int gefunden = 0;
-
-            // Durchsuche nur den Bereich dieser Zeile in CSR
-            for (int k = A.rst[i]; k < A.rst[i+1]; k++) {
-                if (A.ci[k] == j) {
-                    wert = A.val[k];
-                    gefunden = 1;
-                    break;
-                }
-            }
-
-            if (gefunden) {
-                printf("%8.2f", wert);
-            } else {
-                printf("    .   ");
-            }
-        }
-        printf("\n");
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-//pseudo
-// FÜR jede Zeile i von der letzten bis zur ersten:
-//     Nimm den Wert auf der rechten Seite (b[i])
-//
-//     ZIEHE alles ab, was wir schon wissen:
-//         FÜR jede Spalte j rechts von der Diagonale:
-//             Subtrahiere (Matrixwert * bereits bekanntes x[j])
-//
-//     TEILE den Rest durch das Diagonalelement (Matrixwert bei A[i][i])
-//     Speichere das Ergebnis als x[i]
 
 //Rücksubstitution
 void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]) {
@@ -260,16 +61,6 @@ void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]) {
 }
 
 
-
-//Speicherpflege
-void freigabe_dichte_matrix(DichteMatrix A) {
-    // 1. Erst die einzelnen Zeilen freigeben
-    for (int i = 0; i < A.N; i++) {
-        free(A.daten[i]);
-    }
-    // 2. Dann den "Haupt-Zeiger" für die Zeilen-Pointer freigeben
-    free(A.daten);
-}
 
 
 //gen mat ( d1 d2 d3 d4 und k) für bblocke

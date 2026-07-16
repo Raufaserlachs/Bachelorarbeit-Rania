@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>   // Für Zufallszahlen
-#include <math.h>
 #include "Matrixstruktur.h"
 
 FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4, int B) {
@@ -74,54 +73,6 @@ FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4,
     }
     free(mapping);
     return m;
-}
-
-void print_flexible_matrix_tabelle(FlexibleSparseMatrix m) {
-    // Knotenanahl für x y matrix
-    int n = m.knotenAnzahl;
-
-    // //  Nur drucken, wenn die Matrix nicht zu riesig ist
-    // if (n > 100) {
-    //     printf("\n Matrix ist mit zu groß für die Tabellenansicht! ---\n");
-    //     return;
-    // }
-
-
-
-    // Spaltennummerierung oben
-    printf("     ");
-    for(int j = 0; j < n; j++) printf("  %2d  ", j);
-    printf("\n    -");
-    for(int j = 0; j < n; j++) printf("---");
-    printf("\n");
-
-    //nachbar check falsch für matrizen mit d =1
-    for (int i = 0; i < n; i++) {
-        printf("%2d | ", i); // Zeilennummer am Rand
-
-        for (int j = 0; j < n; j++) {
-            int hatNachbar = 0;
-            double wertGefunden = 0;
-
-            // suche nur nach Einträgen, die zur aktuellen Zeile i gehören
-            for (int k = 0; k < m.nne; k++) {
-
-                // wenn Eintrag für Zeile i und Spalte j gefunden
-                if (m.eintraege[k].i == i && m.eintraege[k].j == j) {
-                    hatNachbar = 1;
-                    wertGefunden = m.eintraege[k].wert; // Wert einlesen/merken
-                    break;
-                }
-                // wenn nächsten Zeileneinträge erreicht,  abbrechen
-                if (m.eintraege[k].i > i) break;
-            }
-
-            if (hatNachbar) printf(" %5.2f " , wertGefunden ); else printf("  .   ");
-        }
-        printf("\n");
-    }
-        printf("------------------------------------------\n");
-
 }
 
 
