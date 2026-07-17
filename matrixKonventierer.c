@@ -78,48 +78,49 @@ CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
     CSRMatrix csr;
     csr.N = sparse.knotenAnzahl * sparse.B;
 
-    // 1. Sortieren (Fundament für CSR)
+    // 1. Sortieren
     sortiere_sparse_matrix(&sparse);
 
-    // 2. Speicher-Bedarf DEFINITIV berechnen
-    // A: Die obere Dreiecksmatrix theoretisch (für eine DichteMatrix wäre es 0.5 * N^2)
-    //    Wir nehmen den Worst-Case für die Obere Dreiecksmatrix an.
-    long n_long = (long)csr.N;
-    long puffer_fillin = (n_long * (n_long + 1)) / 2; // Gaußsche Summenformel für Obere Dreiecksmatrix
+    // 2. Speicherbedarf für das obere Dreieck (Gauß-Struktur)
+    // Ein statisches CSR für das obere Dreieck hat bei N Zeilen:
+    // Zeile i hat (csr.N - i) Elemente.
+    long n = (long)csr.N;
+    csr.nnz = (int)((n * (n + 1)) / 2);
 
-    // Wir setzen nnz fest auf die volle Kapazität der oberen Dreiecksmatrix
-    csr.nnz = (int)puffer_fillin;
-
-    // 3. Speicher allokieren (Alles auf 0.0 initialisiert)
-    csr.val = calloc(csr.nnz, sizeof(double));
+    // 3. Speicher allokieren
+    csr.val = calloc(csr.nnz, sizeof(double)); // Alle Werte initial 0.0
     csr.ci = malloc(csr.nnz * sizeof(int));
-    csr.rst = calloc(csr.N + 1, sizeof(int));
+    csr.rst = malloc((csr.N + 1) * sizeof(int));
 
-    // 4. Befüllen mit den existierenden Werten
-    // WICHTIG: Da wir jetzt eine statische Struktur haben, müssen wir beim
-    // Befüllen darauf achten, dass die rst-Struktur auch wirklich die
-    // Puffer-Plätze mitzählt!
+    // 4. Struktur komplett vorinitialisieren (das ist der entscheidende Schritt)
+    csr.rst[0] = 0;
+    for (int i = 0; i < csr.N; i++) {
+        // Zeile i hat (csr.N - i) Einträge
+        csr.rst[i + 1] = csr.rst[i] + (csr.N - i);
 
-    for (int k = 0; k < sparse.nne; k++) {
-        if (sparse.eintraege[k].j >= sparse.eintraege[k].i) {
-            // HIER liegt die Gefahr: Wenn du nur die existierenden einträgst,
-            // ist dein rst-Pointer "dünn", aber dein Speicher ist "fett".
-            // Für den Gauß-Solver ist das okay, solange du die Puffer-Plätze
-            // beim Update als "gefüllt" markierst.
-
-            csr.val[k] = sparse.eintraege[k].wert;
-            csr.ci[k] = sparse.eintraege[k].j;
-            csr.rst[sparse.eintraege[k].i + 1]++;
+        // Spalten-Indizes für diese Zeile festlegen
+        int start = csr.rst[i];
+        for (int j = 0; j < (csr.N - i); j++) {
+            csr.ci[start + j] = i + j;
         }
     }
 
-    // 5. Kumulative Summe für rst
-    for (int i = 0; i < csr.N; i++) {
-        csr.rst[i + 1] += csr.rst[i];
+    // 5. Werte aus der SparseMatrix in die statische Struktur übertragen
+    for (int k = 0; k < sparse.nne; k++) {
+        int i = sparse.eintraege[k].i;
+        int j = sparse.eintraege[k].j;
+
+        if (j >= i) { // Nur oberes Dreieck
+            // Suche den Platz in der Zeile i
+            for (int p = csr.rst[i]; p < csr.rst[i + 1]; p++) {
+                if (csr.ci[p] == j) {
+                    csr.val[p] = sparse.eintraege[k].wert;
+                    break;
+                }
+            }
+        }
     }
 
     return csr;
 }
-
-
 

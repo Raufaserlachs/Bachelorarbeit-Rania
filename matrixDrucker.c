@@ -170,7 +170,7 @@ void drucke_optimierte_csr(CSRMatrix A) {
                 }
             }
 
-            if (wert != 0.0)
+            if (wert != 0.0 )
                 printf("%8.2f", wert);
             else
                 printf("    .   ");
