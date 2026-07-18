@@ -10,7 +10,7 @@ int main(void) {
 
 
     // Matrix konstruieren
-    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2,4);
+    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2,2);
 
     // Matrix Konvertieren
     CSRMatrix meineMatrix = konvertiere_zu_optimierten_csr(meinesparseMatrix);

@@ -15,7 +15,19 @@ double get_value_csr(CSRMatrix A, int row, int col) {
         if (A.ci[k] == col) return A.val[k];
     }
     return 0.0;
+
 }
+
+
+
+double get_value_csr_raw(CSRMatrix A, int row, int col) {
+    for (int k = A.rst[row]; k < A.rst[row + 1]; k++) {
+        if (A.ci[k] == col) return A.val[k];
+    }
+    return 0.0;
+}
+
+
 
 // Wert in CSR setzen (Wichtig für Fill-in!)
 void set_value_csr(CSRMatrix A, int row, int col, double val) {
@@ -51,9 +63,9 @@ void bringe_in_zeilenstufenform_csr(CSRMatrix A, double b[]) {
             // Subtrahiere Zeile i von Zeile j
             // Hier musst du beide Zeilen als CSR-Strukturen "abfahren"
             for (int k = i + 1; k < N; k++) {
-                double val_i = get_value_csr(A, i, k);
+                double val_i = get_value_csr_raw(A, i, k);
                 if (val_i != 0.0) {
-                    double val_j = get_value_csr(A, j, k); // Hier findet Fill-in statt!
+                    double val_j = get_value_csr_raw(A, j, k); // Hier findet Fill-in statt!
                     set_value_csr(A, j, k, val_j - val_i * faktor);
                 }
             }
@@ -78,7 +90,7 @@ void loese_mit_ruecksubstitution_csr(CSRMatrix A, double b[], double x[]) {
             }
         }
 
-        double diag = get_value_csr(A, i, i);
+        double diag = get_value_csr_raw(A, i, i);
         x[i] = (b[i] - summe) / diag;
     }
 }

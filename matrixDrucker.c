@@ -205,10 +205,10 @@ void drucke_csr_nach_gauss(CSRMatrix A) {
                 if (gefunden)
                     printf("%8.2f", wert);
                 else
-                    printf("    .   ");
+                    printf("    .   "); // Punkt für fehlende Werte im oberen Dreieck
             } else {
-                // Unterhalb der Diagonale ist nach Gauss alles 0
-                printf("    0.00");
+                // Unterhalb der Diagonale: Explizit den Punkt drucken, statt "0.00"
+                printf("    .   ");
             }
         }
         printf("\n");
