@@ -2,7 +2,7 @@
 // Created by Nia on 15.05.26.
 //
 
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 
 
@@ -36,7 +36,7 @@ void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]) {
 
 
 //Rücksubstitution
-void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]) {
+void loese_mit_ruecksubstitution_dichte(DichteMatrix A, double b[], double x[]) {
 
     // A ist bereits in Zeilenstufenform!
     int N = A.N;

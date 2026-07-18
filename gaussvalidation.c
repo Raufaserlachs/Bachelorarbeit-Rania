@@ -117,7 +117,7 @@ void testlauf(DichteMatrix A_original) {
     printf("\nZustand nach der Zeilenstufenform (ZSF):");
     drucke_dichte_matrix(A_work);
 
-    loese_mit_ruecksubstitution(A_work, b_work, x_berechnet);
+    loese_mit_ruecksubstitution_dichte(A_work, b_work, x_berechnet);
     // LÖSUNG X AUSGEBEN:
     printf("\nBerechneter Vektor x (Sollte ca. 1.0 sein):\n");
     for(int i = 0; i < N; i++) {

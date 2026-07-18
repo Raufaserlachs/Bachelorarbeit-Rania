@@ -3,7 +3,7 @@
 //
 
 #include <stdlib.h>
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 
 void freigabe_csr_matrix(CSRMatrix A) {

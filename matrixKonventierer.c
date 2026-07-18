@@ -5,7 +5,7 @@
 
 
 #include <stdlib.h>
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse) {
     DichteMatrix dichteMatrix;
@@ -74,44 +74,76 @@ void sortiere_sparse_matrix(FlexibleSparseMatrix *m) {
     qsort(m->eintraege, m->nne, sizeof(MatrixEintrag), compare_eintraege);
 }
 
+
+
 CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
     CSRMatrix csr;
     csr.N = sparse.knotenAnzahl * sparse.B;
+    int N = csr.N;
+    int limit = N / 2; // Die Grenze für die Zonenteilung
 
     // 1. Sortieren
     sortiere_sparse_matrix(&sparse);
 
-    // 2. Speicherbedarf für das obere Dreieck (Gauß-Struktur)
-    // Ein statisches CSR für das obere Dreieck hat bei N Zeilen:
-    // Zeile i hat (csr.N - i) Elemente.
-    long n = (long)csr.N;
-    csr.nnz = (int)((n * (n + 1)) / 2);
-
-    // 3. Speicher allokieren
-    csr.val = calloc(csr.nnz, sizeof(double)); // Alle Werte initial 0.0
-    csr.ci = malloc(csr.nnz * sizeof(int));
-    csr.rst = malloc((csr.N + 1) * sizeof(int));
-
-    // 4. Struktur komplett vorinitialisieren (das ist der entscheidende Schritt)
+    // 2. Speicher-Struktur vorbereiten
+    csr.rst = malloc((N + 1) * sizeof(int));
     csr.rst[0] = 0;
-    for (int i = 0; i < csr.N; i++) {
-        // Zeile i hat (csr.N - i) Einträge
-        csr.rst[i + 1] = csr.rst[i] + (csr.N - i);
+    int laufender_nnz = 0;
 
-        // Spalten-Indizes für diese Zeile festlegen
+    // Wir brauchen ein temporäres Array, um zu wissen, wie viele Elemente wir pro Zeile
+    // in Zone 1 (spärlich) haben, um die Indizes korrekt zu setzen.
+    int* nnz_pro_zeile = calloc(N, sizeof(int));
+
+    // Zone 1 (i < N/2): Nur vorhandene zählen
+    for (int i = 0; i < limit; i++) {
+        for (int k = 0; k < sparse.nne; k++) {
+            if (sparse.eintraege[k].i == i && sparse.eintraege[k].j >= i) {
+                nnz_pro_zeile[i]++;
+            }
+        }
+        laufender_nnz += nnz_pro_zeile[i];
+        csr.rst[i + 1] = laufender_nnz;
+    }
+
+    // Zone 2 (i >= N/2): Volle Kapazität für Fill-in
+    for (int i = limit; i < N; i++) {
+        nnz_pro_zeile[i] = (N - i);
+        laufender_nnz += nnz_pro_zeile[i];
+        csr.rst[i + 1] = laufender_nnz;
+    }
+
+    // 3. Jetzt erst Speicher für val und ci allokieren
+    csr.nnz = laufender_nnz;
+    csr.val = calloc(csr.nnz, sizeof(double));
+    csr.ci = malloc(csr.nnz * sizeof(int));
+
+    // 4. Struktur final befüllen
+    for (int i = 0; i < N; i++) {
         int start = csr.rst[i];
-        for (int j = 0; j < (csr.N - i); j++) {
-            csr.ci[start + j] = i + j;
+        if (i < limit) {
+            // Zone 1: Nur die existierenden Sparse-Elemente eintragen
+            int p = start;
+            for (int k = 0; k < sparse.nne; k++) {
+                if (sparse.eintraege[k].i == i && sparse.eintraege[k].j >= i) {
+                    csr.ci[p] = sparse.eintraege[k].j;
+                    csr.val[p] = sparse.eintraege[k].wert;
+                    p++;
+                }
+            }
+        } else {
+            // Zone 2: Komplettes Gitter befüllen
+            for (int j = 0; j < (N - i); j++) {
+                csr.ci[start + j] = i + j;
+                // Werte werden hier bei Bedarf in einem zweiten Durchgang eingetragen
+            }
         }
     }
 
-    // 5. Werte aus der SparseMatrix in die statische Struktur übertragen
+    // 5. Werte für Zone 2 nachtragen (aus sparse)
     for (int k = 0; k < sparse.nne; k++) {
         int i = sparse.eintraege[k].i;
         int j = sparse.eintraege[k].j;
-
-        if (j >= i) { // Nur oberes Dreieck
-            // Suche den Platz in der Zeile i
+        if (i >= limit && j >= i) {
             for (int p = csr.rst[i]; p < csr.rst[i + 1]; p++) {
                 if (csr.ci[p] == j) {
                     csr.val[p] = sparse.eintraege[k].wert;
@@ -121,6 +153,7 @@ CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
         }
     }
 
+    free(nnz_pro_zeile);
     return csr;
 }
 

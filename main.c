@@ -20,13 +20,19 @@ int main(void) {
 
     drucke_optimierte_csr(meineMatrix);
     // drucke_csr_matrix(meineMatrix);
-    freigabe_csr_matrix(meineMatrix);
+
+
 
     // Testlauf starten
+    testlauf_csr(meineMatrix);
     //testlauf(meineMatrix);
+
+
+    drucke_csr_nach_gauss(meineMatrix);
 
     //Speicher aufräumen
     free(meinesparseMatrix.eintraege);
+    freigabe_csr_matrix(meineMatrix);
 
 
 

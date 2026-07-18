@@ -9,16 +9,26 @@
 
 
 void mmvp_csr(CSRMatrix A, double *x, double *b) {
+    // 1. Initialisiere b mit 0
+    for (int i = 0; i < A.N; i++) b[i] = 0.0;
+
+    // 2. Durchlaufe die gespeicherte obere Dreiecksmatrix
     for (int i = 0; i < A.N; i++) {
-        b[i] = 0.0;
-        // Durchlaufe nur die Einträge der Zeile i
         for (int k = A.rst[i]; k < A.rst[i + 1]; k++) {
-            int spalte = A.ci[k];
-            b[i] += A.val[k] * x[spalte];
+            int j = A.ci[k];
+            double wert = A.val[k];
+
+            // Beitrag für b[i] (aus dem oberen Dreieck oder Diagonale)
+            b[i] += wert * x[j];
+
+            // Wenn es kein Diagonalelement ist (i != j),
+            // muss der Wert auch für b[j] beitragen (Spiegelung!)
+            if (i != j) {
+                b[j] += wert * x[i];
+            }
         }
     }
 }
-
 
 
 
@@ -67,3 +77,6 @@ void testlauf_csr(CSRMatrix A_original) {
 
     berechne_residuum_csr(A_original, x_berechnet, b_original);
 }
+
+
+

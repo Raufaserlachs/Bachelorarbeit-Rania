@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 
 
@@ -181,7 +181,39 @@ void drucke_optimierte_csr(CSRMatrix A) {
 
 
 
+void drucke_csr_nach_gauss(CSRMatrix A) {
+    printf("\n--- CSR-Matrix nach Gauß-Elimination (Obere Dreiecksform) ---\n");
 
+    for (int i = 0; i < A.N; i++) {
+        printf("%2d | ", i);
+
+        for (int j = 0; j < A.N; j++) {
+            // Wir suchen nur noch im oberen Dreieck (und Diagonale)
+            if (j >= i) {
+                double wert = 0.0;
+                int gefunden = 0;
+
+                // Suche in der Zeile i
+                for (int k = A.rst[i]; k < A.rst[i + 1]; k++) {
+                    if (A.ci[k] == j) {
+                        wert = A.val[k];
+                        gefunden = 1;
+                        break;
+                    }
+                }
+
+                if (gefunden)
+                    printf("%8.2f", wert);
+                else
+                    printf("    .   ");
+            } else {
+                // Unterhalb der Diagonale ist nach Gauss alles 0
+                printf("    0.00");
+            }
+        }
+        printf("\n");
+    }
+}
 
 
 

@@ -13,4 +13,5 @@ add_executable(untitled main.c
         matrixKonventierer.c
         matrixDrucker.c
         speicherFreigabe.c
+        gaussSolverCSR.c
 )

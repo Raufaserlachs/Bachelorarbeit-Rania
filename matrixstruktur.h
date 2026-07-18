@@ -77,14 +77,20 @@
     DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse);
     void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]);
     void drucke_dichte_matrix(DichteMatrix dichteMatrix);
-    void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]);
+    void loese_mit_ruecksubstitution_dichte(DichteMatrix A, double b[], double x[]);
     DichteMatrix kopiere_matrix(DichteMatrix A);
     void freigabe_dichte_matrix(DichteMatrix A);
     void testlauf(DichteMatrix A);
     void test_csr_konvertierung();
     CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse);
     void drucke_optimierte_csr(CSRMatrix A);
+    void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]);
+    void loese_mit_ruecksubstitution_csr(CSRMatrix A, double b[], double x[]);
+    void drucke_csr_nach_gauss(CSRMatrix A);
+
+    void testlauf_csr(CSRMatrix A);
     void freigabe_csr_matrix(CSRMatrix A);
+
 
 
 
