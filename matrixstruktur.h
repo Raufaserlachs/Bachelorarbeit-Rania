@@ -2,6 +2,7 @@
 // Created by rania on 23.04.26.
 //
 
+
 #ifndef UNTITLED_MATRIXSTRUKTUR_H
 #define UNTITLED_MATRIXSTRUKTUR_H
 
@@ -12,20 +13,6 @@
         double wert;   // Der Wert (1)
 
     } MatrixEintrag;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     //dünnbesetzte matrix und array aus einträgen
@@ -74,6 +61,20 @@
         double **daten; // Das eigentliche 2D-Array
     } DichteMatrix;
 
+
+
+
+    typedef struct {
+        int N;        // Anzahl der Blöcke
+        int B;        // Blockgröße (z.B. 2, 4, 8)
+        int *row_ptr; // Zeiger auf den Start der Block-Zeilen (Größe N+1)
+        int *col_idx; // Spalten-Index der Blöcke (Größe Anzahl_Block_Einträge)
+        double *val;  // Daten: Block_Einträge * (B * B)
+    } BCSRMatrix;
+
+
+
+
     DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse);
     void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]);
     void drucke_dichte_matrix(DichteMatrix dichteMatrix);
@@ -87,6 +88,16 @@
     void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]);
     void loese_mit_ruecksubstitution_csr(CSRMatrix A, double b[], double x[]);
     void drucke_csr_nach_gauss(CSRMatrix A);
+BCSRMatrix konvertiere_zu_bcsr(FlexibleSparseMatrix sparse);
+void invert_block(double *mat, int B);
+void block_mul(double *a, double *b, double *res, int B);
+void bcsr_sub_mul(double *target, double *factor, double *block, int B);
+void set_value_csr(CSRMatrix A, int row, int col, double val);
+void bringe_in_zeilenstufenform_bcsr(BCSRMatrix A, double *b);
+void drucke_bcsr_nach_gauss(BCSRMatrix A);
+void drucke_bcsr_vor_gauss(BCSRMatrix A);
+void freigeben_bcsr_matrix(BCSRMatrix *A);
+
 
     void testlauf_csr(CSRMatrix A);
     void freigabe_csr_matrix(CSRMatrix A);

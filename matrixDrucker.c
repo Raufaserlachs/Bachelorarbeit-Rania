@@ -220,6 +220,110 @@ void drucke_csr_nach_gauss(CSRMatrix A) {
 
 
 
+/**
+ * Druckt die BCSR-Matrix vor Gauß (unter Berücksichtigung der Symmetrie).
+ */
+void drucke_bcsr_vor_gauss(BCSRMatrix A) {
+    printf("\n--- BCSR-Matrix vor Gauß (Rekonstruktion aus oberem Dreieck) ---\n");
+
+    for (int i = 0; i < A.N; i++) {
+        for (int row_in_block = 0; row_in_block < A.B; row_in_block++) {
+            printf("%2d | ", i * A.B + row_in_block);
+
+            for (int j = 0; j < A.N; j++) {
+
+                // Wir suchen den Block A[i][j]
+                // Bei Symmetrie: Wenn wir A[i][j] brauchen, suchen wir min(i,j), max(i,j)
+                int row_idx = (i < j) ? i : j;
+                int col_idx = (i < j) ? j : i;
+
+                double *block_val = NULL;
+                for (int p = A.row_ptr[row_idx]; p < A.row_ptr[row_idx + 1]; p++) {
+                    if (A.col_idx[p] == col_idx) {
+                        block_val = &A.val[p * A.B * A.B];
+                        break;
+                    }
+                }
+
+                // Drucke die Werte
+                for (int col_in_block = 0; col_in_block < A.B; col_in_block++) {
+                    if (block_val != NULL) {
+                        // Bei Transponierung (j < i): Indizes tauschen
+                        int r = (i < j) ? row_in_block : col_in_block;
+                        int c = (i < j) ? col_in_block : row_in_block;
+                        printf("%8.2f", block_val[r * A.B + c]);
+                    } else {
+                        printf("    .   ");
+                    }
+                }
+                printf(" ");
+            }
+            printf("\n");
+        }
+        printf("------------------------------------------------------------\n");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void drucke_bcsr_nach_gauss(BCSRMatrix A) {
+    printf("\n--- BCSR-Matrix nach Gauß-Elimination (Obere Block-Dreiecksform) ---\n");
+
+    // Über jeden Block-Zeilen-Index
+    for (int i = 0; i < A.N; i++) {
+        // Über jede Zeile innerhalb des Blocks
+        for (int row_in_block = 0; row_in_block < A.B; row_in_block++) {
+            printf("%2d | ", i * A.B + row_in_block);
+
+            // Über jeden Block-Spalten-Index
+            for (int j = 0; j < A.N; j++) {
+
+                // Wir suchen den Block A[i][j]
+                double *block_val = NULL;
+                for (int p = A.row_ptr[i]; p < A.row_ptr[i + 1]; p++) {
+                    if (A.col_idx[p] == j) {
+                        block_val = &A.val[p * A.B * A.B];
+                        break;
+                    }
+                }
+
+                // Drucke die Werte innerhalb des Blocks
+                for (int col_in_block = 0; col_in_block < A.B; col_in_block++) {
+                    // Logik: Unterhalb der Hauptdiagonale (Block-Ebene: j < i) -> Punkt
+                    // Ansonsten: Wert drucken (wenn vorhanden) oder Punkt
+                    if (j < i) {
+                        printf("    .   ");
+                    } else if (block_val != NULL) {
+                        printf("%8.2f", block_val[row_in_block * A.B + col_in_block]);
+                    } else {
+                        printf("    .   ");
+                    }
+                }
+                // Kleiner Abstand zwischen den Blöcken
+                printf(" ");
+            }
+            printf("\n");
+        }
+        // Trennlinie nach jedem Block (optisch schöner)
+        printf("------------------------------------------------------------\n");
+    }
+}
+
+
+
+
+
 
 
 // void drucke_dichte_matrix(DichteMatrix dichteMatrix) {

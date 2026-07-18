@@ -76,84 +76,76 @@ void sortiere_sparse_matrix(FlexibleSparseMatrix *m) {
 
 
 
-CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
-    CSRMatrix csr;
-    csr.N = sparse.knotenAnzahl * sparse.B;
-    int N = csr.N;
-    int limit = N / 2; // Die Grenze für die Zonenteilung
+
+// --- Konvertierung von FlexibleSparseMatrix zu BCSR ---
+BCSRMatrix konvertiere_zu_bcsr(FlexibleSparseMatrix sparse) {
+    BCSRMatrix bcsr;
+    bcsr.N = sparse.knotenAnzahl; // Anzahl Blöcke
+    bcsr.B = sparse.B;
+    int B2 = bcsr.B * bcsr.B;
+    int limit = bcsr.N / 2;
 
     // 1. Sortieren
     sortiere_sparse_matrix(&sparse);
 
     // 2. Speicher-Struktur vorbereiten
-    csr.rst = malloc((N + 1) * sizeof(int));
-    csr.rst[0] = 0;
-    int laufender_nnz = 0;
+    bcsr.row_ptr = calloc(bcsr.N + 1, sizeof(int));
 
-    // Wir brauchen ein temporäres Array, um zu wissen, wie viele Elemente wir pro Zeile
-    // in Zone 1 (spärlich) haben, um die Indizes korrekt zu setzen.
-    int* nnz_pro_zeile = calloc(N, sizeof(int));
-
-    // Zone 1 (i < N/2): Nur vorhandene zählen
-    for (int i = 0; i < limit; i++) {
-        for (int k = 0; k < sparse.nne; k++) {
-            if (sparse.eintraege[k].i == i && sparse.eintraege[k].j >= i) {
-                nnz_pro_zeile[i]++;
-            }
-        }
-        laufender_nnz += nnz_pro_zeile[i];
-        csr.rst[i + 1] = laufender_nnz;
-    }
-
-    // Zone 2 (i >= N/2): Volle Kapazität für Fill-in
-    for (int i = limit; i < N; i++) {
-        nnz_pro_zeile[i] = (N - i);
-        laufender_nnz += nnz_pro_zeile[i];
-        csr.rst[i + 1] = laufender_nnz;
-    }
-
-    // 3. Jetzt erst Speicher für val und ci allokieren
-    csr.nnz = laufender_nnz;
-    csr.val = calloc(csr.nnz, sizeof(double));
-    csr.ci = malloc(csr.nnz * sizeof(int));
-
-    // 4. Struktur final befüllen
-    for (int i = 0; i < N; i++) {
-        int start = csr.rst[i];
+    // Wir zählen Blöcke (statt Einzelwerte)
+    // Zone 1: Nur existierende Blöcke zählen
+    // Zone 2: Alle Blöcke J >= I werden reserviert (für Fill-in)
+    int laufender_block_idx = 0;
+    for (int i = 0; i < bcsr.N; i++) {
+        bcsr.row_ptr[i] = laufender_block_idx;
         if (i < limit) {
-            // Zone 1: Nur die existierenden Sparse-Elemente eintragen
+            // Zähle existierende Blöcke
+            for (int k = 0; k < sparse.nne; k += B2) {
+                if (sparse.eintraege[k].i / bcsr.B == i) {
+                    laufender_block_idx++;
+                }
+            }
+        } else {
+            // Reserviere alles für Fill-in
+            laufender_block_idx += (bcsr.N - i);
+        }
+    }
+    bcsr.row_ptr[bcsr.N] = laufender_block_idx;
+
+    // 3. Allokieren
+    bcsr.val = calloc(laufender_block_idx * B2, sizeof(double));
+    bcsr.col_idx = malloc(laufender_block_idx * sizeof(int));
+
+    // 4. Daten füllen
+    for (int i = 0; i < bcsr.N; i++) {
+        int start = bcsr.row_ptr[i];
+        if (i < limit) {
             int p = start;
-            for (int k = 0; k < sparse.nne; k++) {
-                if (sparse.eintraege[k].i == i && sparse.eintraege[k].j >= i) {
-                    csr.ci[p] = sparse.eintraege[k].j;
-                    csr.val[p] = sparse.eintraege[k].wert;
+            for (int k = 0; k < sparse.nne; k += B2) {
+                if (sparse.eintraege[k].i / bcsr.B == i) {
+                    bcsr.col_idx[p] = sparse.eintraege[k].j / bcsr.B;
+                    // Kopiere den ganzen BxB Block
+                    for(int b = 0; b < B2; b++) bcsr.val[p * B2 + b] = sparse.eintraege[k + b].wert;
                     p++;
                 }
             }
         } else {
-            // Zone 2: Komplettes Gitter befüllen
-            for (int j = 0; j < (N - i); j++) {
-                csr.ci[start + j] = i + j;
-                // Werte werden hier bei Bedarf in einem zweiten Durchgang eingetragen
+            for (int j = 0; j < (bcsr.N - i); j++) {
+                bcsr.col_idx[start + j] = i + j;
             }
-        }
-    }
-
-    // 5. Werte für Zone 2 nachtragen (aus sparse)
-    for (int k = 0; k < sparse.nne; k++) {
-        int i = sparse.eintraege[k].i;
-        int j = sparse.eintraege[k].j;
-        if (i >= limit && j >= i) {
-            for (int p = csr.rst[i]; p < csr.rst[i + 1]; p++) {
-                if (csr.ci[p] == j) {
-                    csr.val[p] = sparse.eintraege[k].wert;
-                    break;
+            // Nachtragen der bekannten Werte in Zone 2
+            for (int k = 0; k < sparse.nne; k += B2) {
+                int block_i = sparse.eintraege[k].i / bcsr.B;
+                int block_j = sparse.eintraege[k].j / bcsr.B;
+                if (block_i == i && block_j >= i) {
+                    for (int p = start; p < bcsr.row_ptr[i + 1]; p++) {
+                        if (bcsr.col_idx[p] == block_j) {
+                            for(int b = 0; b < B2; b++) bcsr.val[p * B2 + b] = sparse.eintraege[k + b].wert;
+                            break;
+                        }
+                    }
                 }
             }
         }
     }
-
-    free(nnz_pro_zeile);
-    return csr;
+    return bcsr;
 }
-
