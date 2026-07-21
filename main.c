@@ -18,7 +18,7 @@ int main(void) {
     // Vorher-Zustand zeigen
     printf("VOR DEM GAUSS:");
 
-    drucke_optimierte_csr(meineMatrix);
+    drucke_csr_matrix(meineMatrix);
     // drucke_csr_matrix(meineMatrix);
     freigabe_csr_matrix(meineMatrix);
 

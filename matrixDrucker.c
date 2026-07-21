@@ -118,7 +118,7 @@ void drucke_csr_matrix(CSRMatrix A) {
             double wert = 0.0;
             int gefunden = 0;
 
-            // Durchsuche nur den Bereich dieser Zeile in CSR
+            // Durchsuche den Bereich dieser Zeile in CSR
             for (int k = A.rst[i]; k < A.rst[i+1]; k++) {
                 if (A.ci[k] == j) {
                     wert = A.val[k];
@@ -127,7 +127,9 @@ void drucke_csr_matrix(CSRMatrix A) {
                 }
             }
 
-            if (gefunden) {
+            // Wenn der Wert gefunden wurde UND ungleich 0.0 ist, drucke ihn.
+            // Ansonsten (also wenn nicht gefunden ODER der Wert exakt 0.0 ist) drucke den Punkt.
+            if (gefunden && wert != 0.0) {
                 printf("%8.2f", wert);
             } else {
                 printf("    .   ");
@@ -138,46 +140,6 @@ void drucke_csr_matrix(CSRMatrix A) {
 }
 
 
-
-void drucke_optimierte_csr(CSRMatrix A) {
-    printf("\n--- Optimierte CSR-Matrix (Symmetrisch gespiegelt) ---\n");
-
-    // Header
-    printf("     ");
-    for (int j = 0; j < A.N; j++) printf("  [%2d]  ", j);
-    printf("\n     ");
-    for (int j = 0; j < A.N; j++) printf("--------");
-    printf("\n");
-
-    for (int i = 0; i < A.N; i++) {
-        printf("%2d | ", i);
-
-        for (int j = 0; j < A.N; j++) {
-            double wert = 0.0;
-
-            // Logik:
-            // 1. Wenn j >= i: Suche in CSR (Oberes Dreieck)
-            // 2. Wenn j < i: Suche den Wert A[j][i] (Unteres Dreieck -> gespiegelt)
-
-            int row = (j >= i) ? i : j;
-            int col = (j >= i) ? j : i;
-
-            // Suche in der entsprechenden Zeile 'row' nach Spalte 'col'
-            for (int k = A.rst[row]; k < A.rst[row + 1]; k++) {
-                if (A.ci[k] == col) {
-                    wert = A.val[k];
-                    break;
-                }
-            }
-
-            if (wert != 0.0 )
-                printf("%8.2f", wert);
-            else
-                printf("    .   ");
-        }
-        printf("\n");
-    }
-}
 
 
 

@@ -3,9 +3,11 @@
 //
 
 
-
 #include <stdlib.h>
+#include <string.h>
 #include "Matrixstruktur.h"
+
+
 
 DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse) {
     DichteMatrix dichteMatrix;
@@ -77,50 +79,82 @@ void sortiere_sparse_matrix(FlexibleSparseMatrix *m) {
 CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
     CSRMatrix csr;
     csr.N = sparse.knotenAnzahl * sparse.B;
+    int N = csr.N;
+    int limit = N / 2; // Grenze für den 4. Quadranten
 
-    // 1. Sortieren
+    // 1. Vorhandene Einträge sortieren
     sortiere_sparse_matrix(&sparse);
 
-    // 2. Speicherbedarf für das obere Dreieck (Gauß-Struktur)
-    // Ein statisches CSR für das obere Dreieck hat bei N Zeilen:
-    // Zeile i hat (csr.N - i) Elemente.
-    long n = (long)csr.N;
-    csr.nnz = (int)((n * (n + 1)) / 2);
+    // 2. Speicherbedarf pro Zeile exakt bestimmen
+    int* nnz_pro_zeile = calloc(N, sizeof(int));
+    int laufender_nnz = 0;
 
-    // 3. Speicher allokieren
-    csr.val = calloc(csr.nnz, sizeof(double)); // Alle Werte initial 0.0
-    csr.ci = malloc(csr.nnz * sizeof(int));
-    csr.rst = malloc((csr.N + 1) * sizeof(int));
-
-    // 4. Struktur komplett vorinitialisieren (das ist der entscheidende Schritt)
-    csr.rst[0] = 0;
-    for (int i = 0; i < csr.N; i++) {
-        // Zeile i hat (csr.N - i) Einträge
-        csr.rst[i + 1] = csr.rst[i] + (csr.N - i);
-
-        // Spalten-Indizes für diese Zeile festlegen
-        int start = csr.rst[i];
-        for (int j = 0; j < (csr.N - i); j++) {
-            csr.ci[start + j] = i + j;
+    // Zone 1 (Zeilen 0 bis limit - 1):
+    // Hier speichern wir NUR die echten, vorhandenen nne-Einträge der jeweiligen Zeile (egal wo sie liegen)
+    for (int i = 0; i < limit; i++) {
+        for (int k = 0; k < sparse.nne; k++) {
+            if (sparse.eintraege[k].i == i) {
+                nnz_pro_zeile[i]++;
+            }
         }
+        laufender_nnz += nnz_pro_zeile[i];
     }
 
-    // 5. Werte aus der SparseMatrix in die statische Struktur übertragen
-    for (int k = 0; k < sparse.nne; k++) {
-        int i = sparse.eintraege[k].i;
-        int j = sparse.eintraege[k].j;
+    // Zone 2 / 4. Quadrant (Zeilen limit bis N - 1):
+    // Hier erzwingen wir die VOLLE Zeile (von Spalte 0 bis N-1) als Speicher,
+    // damit das Fill-in beim Gauß-Verfahren dort komplett Platz findet.
+    for (int i = limit; i < N; i++) {
+        nnz_pro_zeile[i] = N; // Jede Zeile bekommt alle N Spalten
+        laufender_nnz += N;
+    }
 
-        if (j >= i) { // Nur oberes Dreieck
-            // Suche den Platz in der Zeile i
-            for (int p = csr.rst[i]; p < csr.rst[i + 1]; p++) {
-                if (csr.ci[p] == j) {
-                    csr.val[p] = sparse.eintraege[k].wert;
-                    break;
+    // 3. Speicher allokieren
+    csr.nnz = laufender_nnz;
+    csr.rst = malloc((N + 1) * sizeof(int));
+    csr.val = calloc(csr.nnz, sizeof(double)); // Alle Werte standardmäßig 0.0
+    csr.ci = malloc(csr.nnz * sizeof(int));
+
+    // 4. Row-Start (rst) Array aufbauen
+    csr.rst[0] = 0;
+    for (int i = 0; i < N; i++) {
+        csr.rst[i + 1] = csr.rst[i] + nnz_pro_zeile[i];
+    }
+
+    // 5. Spaltenindizes (ci) für beide Zonen eintragen
+    for (int i = 0; i < N; i++) {
+        int start = csr.rst[i];
+        if (i < limit) {
+            // Zone 1: Nur die echten Spaltenindizes aus der SparseMatrix eintragen
+            int p = start;
+            for (int k = 0; k < sparse.nne; k++) {
+                if (sparse.eintraege[k].i == i) {
+                    csr.ci[p] = sparse.eintraege[k].j;
+                    p++;
                 }
+            }
+        } else {
+            // Zone 2 (4. Quadrant): Die ganze Zeile von 0 bis N-1 durchgehend als Spalten indizieren
+            for (int j = 0; j < N; j++) {
+                csr.ci[start + j] = j;
             }
         }
     }
 
+    // 6. Werte aus der SparseMatrix in die val-Struktur übertragen (für alle Zeilen)
+    for (int k = 0; k < sparse.nne; k++) {
+        int i = sparse.eintraege[k].i;
+        int j = sparse.eintraege[k].j;
+        double wert = sparse.eintraege[k].wert;
+
+        // Finde den passenden Platz in der Zeile i
+        for (int p = csr.rst[i]; p < csr.rst[i + 1]; p++) {
+            if (csr.ci[p] == j) {
+                csr.val[p] = wert;
+                break;
+            }
+        }
+    }
+
+    free(nnz_pro_zeile);
     return csr;
 }
-
