@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 
 
@@ -72,25 +72,19 @@ CSRMatrix konvertiere_zu_csr(FlexibleSparseMatrix sparse) {
     return csr;
 }
 
+
+
+//Aufgabe: Vorhandene Einträge der Sparse-Matrix sortieren
 void sortiere_sparse_matrix(FlexibleSparseMatrix *m) {
     qsort(m->eintraege, m->nne, sizeof(MatrixEintrag), compare_eintraege);
 }
 
-CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
-    CSRMatrix csr;
-    csr.N = sparse.knotenAnzahl * sparse.B;
-    int N = csr.N;
-    int limit = N / 2; // Grenze für den 4. Quadranten
-
-    // 1. Vorhandene Einträge sortieren
-    sortiere_sparse_matrix(&sparse);
-
-    // 2. Speicherbedarf pro Zeile exakt bestimmen
-    int* nnz_pro_zeile = calloc(N, sizeof(int));
+// Speicherbedarf pro Zeile berechnen (unterteilt in Zone 1 und Zone 2)
+int* berechne_nnz_pro_zeile(int N, int limit, FlexibleSparseMatrix sparse, int *laufender_nnz_out) {
+    int *nnz_pro_zeile = calloc(N, sizeof(int));
     int laufender_nnz = 0;
 
-    // Zone 1 (Zeilen 0 bis limit - 1):
-    // Hier speichern wir NUR die echten, vorhandenen nne-Einträge der jeweiligen Zeile (egal wo sie liegen)
+    // Zone 1: Nur echte vorhandene Einträge zählen
     for (int i = 0; i < limit; i++) {
         for (int k = 0; k < sparse.nne; k++) {
             if (sparse.eintraege[k].i == i) {
@@ -100,60 +94,100 @@ CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
         laufender_nnz += nnz_pro_zeile[i];
     }
 
-    // Zone 2 / 4. Quadrant (Zeilen limit bis N - 1):
-    // Hier erzwingen wir die VOLLE Zeile (von Spalte 0 bis N-1) als Speicher,
-    // damit das Fill-in beim Gauß-Verfahren dort komplett Platz findet.
+    // Zone 2 (ab 4. Quadrant): Volle Zeile erzwingen
     for (int i = limit; i < N; i++) {
-        nnz_pro_zeile[i] = N; // Jede Zeile bekommt alle N Spalten
+        nnz_pro_zeile[i] = N;
         laufender_nnz += N;
     }
 
-    // 3. Speicher allokieren
-    csr.nnz = laufender_nnz;
-    csr.rst = malloc((N + 1) * sizeof(int));
-    csr.val = calloc(csr.nnz, sizeof(double)); // Alle Werte standardmäßig 0.0
-    csr.ci = malloc(csr.nnz * sizeof(int));
+    *laufender_nnz_out = laufender_nnz;
+    return nnz_pro_zeile;
+}
 
-    // 4. Row-Start (rst) Array aufbauen
+
+// CSR-Struktur und Grundspeicher allokieren
+CSRMatrix allokiere_csr_struktur(int N, int nnz, int *nnz_pro_zeile) {
+    CSRMatrix csr;
+    csr.N = N;
+    csr.nnz = nnz;
+    csr.rst = malloc((N + 1) * sizeof(int));
+    csr.val = calloc(nnz, sizeof(double));
+    csr.ci = malloc(nnz * sizeof(int));
+
+    // Row-Start (rst) Array aufbauen
     csr.rst[0] = 0;
     for (int i = 0; i < N; i++) {
         csr.rst[i + 1] = csr.rst[i] + nnz_pro_zeile[i];
     }
 
-    // 5. Spaltenindizes (ci) für beide Zonen eintragen
+    return csr;
+}
+
+
+// Spaltenindizes (ci) für beide Zonen eintragen
+void fuelle_spaltenindizes(CSRMatrix *csr, int N, int limit, FlexibleSparseMatrix sparse) {
     for (int i = 0; i < N; i++) {
-        int start = csr.rst[i];
+        int start = csr->rst[i];
         if (i < limit) {
-            // Zone 1: Nur die echten Spaltenindizes aus der SparseMatrix eintragen
+            // Zone 1: Nur echte Spaltenindizes eintragen
             int p = start;
             for (int k = 0; k < sparse.nne; k++) {
                 if (sparse.eintraege[k].i == i) {
-                    csr.ci[p] = sparse.eintraege[k].j;
+                    csr->ci[p] = sparse.eintraege[k].j;
                     p++;
                 }
             }
         } else {
-            // Zone 2 (4. Quadrant): Die ganze Zeile von 0 bis N-1 durchgehend als Spalten indizieren
+            // Zone 2 (4. Quadrant): Alle Spalten von 0 bis N-1 indizieren
             for (int j = 0; j < N; j++) {
-                csr.ci[start + j] = j;
+                csr->ci[start + j] = j;
             }
         }
     }
+}
 
-    // 6. Werte aus der SparseMatrix in die val-Struktur übertragen (für alle Zeilen)
+// Werte aus der Sparse-Matrix in das CSR-val-Array übertragen
+void fuelle_werte(CSRMatrix *csr, FlexibleSparseMatrix sparse) {
     for (int k = 0; k < sparse.nne; k++) {
         int i = sparse.eintraege[k].i;
         int j = sparse.eintraege[k].j;
         double wert = sparse.eintraege[k].wert;
 
         // Finde den passenden Platz in der Zeile i
-        for (int p = csr.rst[i]; p < csr.rst[i + 1]; p++) {
-            if (csr.ci[p] == j) {
-                csr.val[p] = wert;
+        for (int p = csr->rst[i]; p < csr->rst[i + 1]; p++) {
+            if (csr->ci[p] == j) {
+                csr->val[p] = wert;
                 break;
             }
         }
     }
+}
+
+
+
+
+
+// Koordinierungsfunktion für csr konvertierung
+CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
+
+    int N = sparse.knotenAnzahl * sparse.B;
+    int limit = N / 2;
+
+    // 1. Sortieren
+    sortiere_sparse_matrix(&sparse);
+
+    // 2. NNZ pro Zeile berechnen
+    int laufender_nnz = 0;
+    int *nnz_pro_zeile = berechne_nnz_pro_zeile(N, limit, sparse, &laufender_nnz);
+
+    // 3. Speicher allokieren & rst aufbauen
+    CSRMatrix csr = allokiere_csr_struktur(N, laufender_nnz, nnz_pro_zeile);
+
+    // 4. Spaltenindizes (ci) befüllen
+    fuelle_spaltenindizes(&csr, N, limit, sparse);
+
+    // 5. Werte (val) übertragen
+    fuelle_werte(&csr, sparse);
 
     free(nnz_pro_zeile);
     return csr;

@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 
 

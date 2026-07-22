@@ -20,15 +20,26 @@ int main(void) {
 
     drucke_csr_matrix(meineMatrix);
     // drucke_csr_matrix(meineMatrix);
-    freigabe_csr_matrix(meineMatrix);
+
+    int gesamt_dim = meineMatrix.N;
+    double *b = malloc(gesamt_dim * sizeof(double));
+    for (int i = 0; i < gesamt_dim; i++) b[i] = 1.0;
+
+
+
+    bringe_in_zeilenstufenform_csr(meineMatrix, b);
+
+
+    drucke_csr_matrix(meineMatrix);
+
 
     // Testlauf starten
     //testlauf(meineMatrix);
 
     //Speicher aufräumen
     free(meinesparseMatrix.eintraege);
-
-
+    freigabe_csr_matrix(meineMatrix);
+    free(b);
 
     printf("Speicher erfolgreich bereinigt.\n");
 

@@ -2,7 +2,7 @@
 // Created by Nia on 15.05.26.
 //
 
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 
 

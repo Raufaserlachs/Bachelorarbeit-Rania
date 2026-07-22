@@ -85,6 +85,7 @@
     CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse);
     void drucke_optimierte_csr(CSRMatrix A);
     void freigabe_csr_matrix(CSRMatrix A);
+    void bringe_in_zeilenstufenform_csr(CSRMatrix A, double b[]);
 
 
 

@@ -3,7 +3,7 @@
 //
 
 #include <stdlib.h>
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 
 void freigabe_csr_matrix(CSRMatrix A) {
@@ -13,7 +13,6 @@ void freigabe_csr_matrix(CSRMatrix A) {
 }
 
 
-//Speicherpflege
 void freigabe_dichte_matrix(DichteMatrix A) {
     // 1. Erst die einzelnen Zeilen freigeben
     for (int i = 0; i < A.N; i++) {
