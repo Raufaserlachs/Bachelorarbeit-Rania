@@ -55,10 +55,21 @@ void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]) {
         // x[i] = (b[i] - Summe) / Diagonalelement
         x[i] = (b[i] - summe) / A.daten[i][i];
     }
-
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

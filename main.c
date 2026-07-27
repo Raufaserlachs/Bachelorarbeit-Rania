@@ -32,7 +32,11 @@ int main(void) {
 
     drucke_csr_matrix(meineMatrix);
 
+    double *x = erstelle_loesungsvektor(meineMatrix.N);
 
+    loese_rueckwaertssubstitution_csr(meineMatrix , b, x);
+
+    drucke_vektor_x(x , meineMatrix.N );
     // Testlauf starten
     //testlauf(meineMatrix);
 
@@ -40,7 +44,7 @@ int main(void) {
     free(meinesparseMatrix.eintraege);
     freigabe_csr_matrix(meineMatrix);
     free(b);
-
+    free(x);
     printf("Speicher erfolgreich bereinigt.\n");
 
 

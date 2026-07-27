@@ -141,7 +141,15 @@ void drucke_csr_matrix(CSRMatrix A) {
 
 
 
-
+/**
+ * Gibt den Lösungsvektor x formatiert aus.
+ */
+void drucke_vektor_x(double x[], int N) {
+    printf("Lösungsvektor x:\n");
+    for (int i = 0; i < N; i++) {
+        printf("x[%d] = %10.6f\n", i, x[i]);
+    }
+}
 
 
 

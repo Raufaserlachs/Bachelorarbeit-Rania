@@ -5,7 +5,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "matrixstruktur.h"
+#include <stdbool.h>
 
 
 
@@ -31,9 +33,6 @@ DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse) {
     return dichteMatrix;
 
 }
-
-
-
 
 // Hilfsfunktion zum Sortieren der Einträge (für korrektes CSR)
 int compare_eintraege(const void *a, const void *b) {
@@ -74,36 +73,99 @@ CSRMatrix konvertiere_zu_csr(FlexibleSparseMatrix sparse) {
 
 
 
-//Aufgabe: Vorhandene Einträge der Sparse-Matrix sortieren
+
+
+
+
+// Aufgabe: Vorhandene Einträge der Sparse-Matrix sortieren
 void sortiere_sparse_matrix(FlexibleSparseMatrix *m) {
     qsort(m->eintraege, m->nne, sizeof(MatrixEintrag), compare_eintraege);
 }
 
-// Speicherbedarf pro Zeile berechnen (unterteilt in Zone 1 und Zone 2)
-int* berechne_nnz_pro_zeile(int N, int limit, FlexibleSparseMatrix sparse, int *laufender_nnz_out) {
+// Hilfsstruktur für die blockbasierte symbolische Analyse (Einfaches dynamisches Array pro Block-Zeile)
+typedef struct {
+    int *spalten;
+    int anzahl;
+    int kapazitaet;
+} BlockZeile;
+
+void fuege_eindeutig_hinzu(BlockZeile *bz, int col) {
+    for (int i = 0; i < bz->anzahl; i++) {
+        if (bz->spalten[i] == col) return; // Schon da
+    }
+    if (bz->anzahl >= bz->kapazitaet) {
+        bz->kapazitaet = bz->kapazitaet == 0 ? 4 : bz->kapazitaet * 2;
+        bz->spalten = realloc(bz->spalten, bz->kapazitaet * sizeof(int));
+    }
+    bz->spalten[bz->anzahl++] = col;
+}
+
+bool enthalt_block(BlockZeile *bz, int col) {
+    for (int i = 0; i < bz->anzahl; i++) {
+        if (bz->spalten[i] == col) return true;
+    }
+    return false;
+}
+
+// Block-basierte symbolische Faktorisierung & exakte NNZ-Bestimmung pro skalarer Zeile
+int* berechne_nnz_pro_zeile_symbolisch(int N, int B, FlexibleSparseMatrix sparse, int *laufender_nnz_out) {
+    int K = sparse.knotenAnzahl; // Anzahl der Blöcke
+
+    // 1. Block-Strukturen für jede Block-Zeile initialisieren
+    BlockZeile *block_struktur = malloc(K * sizeof(BlockZeile));
+    for (int i = 0; i < K; i++) {
+        block_struktur[i].anzahl = 0;
+        block_struktur[i].kapazitaet = 0;
+        block_struktur[i].spalten = NULL;
+    }
+
+    // Initiale Nachbarn aus der Sparse-Matrix eintragen
+    for (int k = 0; k < sparse.nne; k++) {
+        int block_i = sparse.eintraege[k].i / B;
+        int block_j = sparse.eintraege[k].j / B;
+        fuege_eindeutig_hinzu(&block_struktur[block_i], block_j);
+    }
+
+    // 2. Symbolische Right-Looking Elimination auf Block-Ebene simulieren
+    for (int i = 0; i < K - 1; i++) {
+        // Für jede Block-Spalte j in Zeile i (mit j > i)
+        for (int idx_j = 0; idx_j < block_struktur[i].anzahl; idx_j++) {
+            int j = block_struktur[i].spalten[idx_j];
+            if (j > i) {
+                // Wenn Block (j, i) existiert, breitet sich das Fill-in aus
+                if (enthalt_block(&block_struktur[j], i)) {
+                    for (int idx_k = 0; idx_k < block_struktur[i].anzahl; idx_k++) {
+                        int k = block_struktur[i].spalten[idx_k];
+                        if (k > i) {
+                            fuege_eindeutig_hinzu(&block_struktur[j], k);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Skalare NNZ pro Zeile anhand der finalen Block-Struktur berechnen
     int *nnz_pro_zeile = calloc(N, sizeof(int));
     int laufender_nnz = 0;
 
-    // Zone 1: Nur echte vorhandene Einträge zählen
-    for (int i = 0; i < limit; i++) {
-        for (int k = 0; k < sparse.nne; k++) {
-            if (sparse.eintraege[k].i == i) {
-                nnz_pro_zeile[i]++;
-            }
-        }
-        laufender_nnz += nnz_pro_zeile[i];
+    for (int skalar_i = 0; skalar_i < N; skalar_i++) {
+        int block_i = skalar_i / B;
+        // Jede Block-Spalte in der Block-Zeile bringt B skalare Einträge mit
+        int nnz_hier = block_struktur[block_i].anzahl * B;
+        nnz_pro_zeile[skalar_i] = nnz_hier;
+        laufender_nnz += nnz_hier;
     }
 
-    // Zone 2 (ab 4. Quadrant): Volle Zeile erzwingen
-    for (int i = limit; i < N; i++) {
-        nnz_pro_zeile[i] = N;
-        laufender_nnz += N;
+    // Aufräumen der temporären Block-Strukturen
+    for (int i = 0; i < K; i++) {
+        free(block_struktur[i].spalten);
     }
+    free(block_struktur);
 
     *laufender_nnz_out = laufender_nnz;
     return nnz_pro_zeile;
 }
-
 
 // CSR-Struktur und Grundspeicher allokieren
 CSRMatrix allokiere_csr_struktur(int N, int nnz, int *nnz_pro_zeile) {
@@ -123,27 +185,49 @@ CSRMatrix allokiere_csr_struktur(int N, int nnz, int *nnz_pro_zeile) {
     return csr;
 }
 
+// Spaltenindizes (ci) über die symbolisch ermittelte Block-Struktur eintragen
+void fuelle_spaltenindizes_symbolisch(CSRMatrix *csr, int N, int B, FlexibleSparseMatrix sparse) {
+    int K = sparse.knotenAnzahl;
 
-// Spaltenindizes (ci) für beide Zonen eintragen
-void fuelle_spaltenindizes(CSRMatrix *csr, int N, int limit, FlexibleSparseMatrix sparse) {
-    for (int i = 0; i < N; i++) {
-        int start = csr->rst[i];
-        if (i < limit) {
-            // Zone 1: Nur echte Spaltenindizes eintragen
-            int p = start;
-            for (int k = 0; k < sparse.nne; k++) {
-                if (sparse.eintraege[k].i == i) {
-                    csr->ci[p] = sparse.eintraege[k].j;
-                    p++;
+    // Wir bauen die Block-Struktur für das Eintragen noch einmal kurz auf (oder übergeben sie direkt)
+    BlockZeile *block_struktur = malloc(K * sizeof(BlockZeile));
+    for (int i = 0; i < K; i++) {
+        block_struktur[i].anzahl = 0;
+        block_struktur[i].kapazitaet = 0;
+        block_struktur[i].spalten = NULL;
+    }
+    for (int k = 0; k < sparse.nne; k++) {
+        int block_i = sparse.eintraege[k].i / B;
+        int block_j = sparse.eintraege[k].j / B;
+        fuege_eindeutig_hinzu(&block_struktur[block_i], block_j);
+    }
+    for (int i = 0; i < K - 1; i++) {
+        for (int idx_j = 0; idx_j < block_struktur[i].anzahl; idx_j++) {
+            int j = block_struktur[i].spalten[idx_j];
+            if (j > i && enthalt_block(&block_struktur[j], i)) {
+                for (int idx_k = 0; idx_k < block_struktur[i].anzahl; idx_k++) {
+                    int k = block_struktur[i].spalten[idx_k];
+                    if (k > i) fuege_eindeutig_hinzu(&block_struktur[j], k);
                 }
-            }
-        } else {
-            // Zone 2 (4. Quadrant): Alle Spalten von 0 bis N-1 indizieren
-            for (int j = 0; j < N; j++) {
-                csr->ci[start + j] = j;
             }
         }
     }
+
+    // Spaltenindizes ins ci-Array schreiben
+    for (int skalar_i = 0; skalar_i < N; skalar_i++) {
+        int block_i = skalar_i / B;
+        int p = csr->rst[skalar_i];
+
+        for (int idx_j = 0; idx_j < block_struktur[block_i].anzahl; idx_j++) {
+            int block_j = block_struktur[block_i].spalten[idx_j];
+            for (int sub_c = 0; sub_c < B; sub_c++) {
+                csr->ci[p++] = (block_j * B) + sub_c;
+            }
+        }
+    }
+
+    for (int i = 0; i < K; i++) free(block_struktur[i].spalten);
+    free(block_struktur);
 }
 
 // Werte aus der Sparse-Matrix in das CSR-val-Array übertragen
@@ -163,28 +247,23 @@ void fuelle_werte(CSRMatrix *csr, FlexibleSparseMatrix sparse) {
     }
 }
 
-
-
-
-
-// Koordinierungsfunktion für csr konvertierung
+// Koordinierungsfunktion für die optimierte CSR-Konvertierung mit symbolischer Faktorisierung
 CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
-
     int N = sparse.knotenAnzahl * sparse.B;
-    int limit = N / 2;
+    int B = sparse.B;
 
     // 1. Sortieren
     sortiere_sparse_matrix(&sparse);
 
-    // 2. NNZ pro Zeile berechnen
+    // 2. NNZ pro Zeile durch symbolische Block-Faktorisierung bestimmen
     int laufender_nnz = 0;
-    int *nnz_pro_zeile = berechne_nnz_pro_zeile(N, limit, sparse, &laufender_nnz);
+    int *nnz_pro_zeile = berechne_nnz_pro_zeile_symbolisch(N, B, sparse, &laufender_nnz);
 
     // 3. Speicher allokieren & rst aufbauen
     CSRMatrix csr = allokiere_csr_struktur(N, laufender_nnz, nnz_pro_zeile);
 
-    // 4. Spaltenindizes (ci) befüllen
-    fuelle_spaltenindizes(&csr, N, limit, sparse);
+    // 4. Spaltenindizes (ci) symbolisch befüllen
+    fuelle_spaltenindizes_symbolisch(&csr, N, B, sparse);
 
     // 5. Werte (val) übertragen
     fuelle_werte(&csr, sparse);

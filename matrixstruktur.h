@@ -86,9 +86,9 @@
     void drucke_optimierte_csr(CSRMatrix A);
     void freigabe_csr_matrix(CSRMatrix A);
     void bringe_in_zeilenstufenform_csr(CSRMatrix A, double b[]);
-
-
-
+    double*erstelle_loesungsvektor(int N);
+    void loese_rueckwaertssubstitution_csr(CSRMatrix A, double b[], double x[]);
+    void drucke_vektor_x(double x[], int N);
 
 
 #endif //UNTITLED_MATRIXSTRUKTUR_H
