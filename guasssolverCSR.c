@@ -3,7 +3,6 @@
 //
 
 #include <stdlib.h>
-
 #include "matrixstruktur.h"
 
 /**
@@ -33,21 +32,21 @@ void set_value_csr(CSRMatrix A, int row, int col, double val) {
 }
 
 /**
- * 3. Teilaufgabe: Pivot-Prüfung und Schutz gegen Division durch Null.
+ * Teilaufgabe: Pivot-Prüfung und Schutz gegen Division durch Null.
  */
 int ist_gueltiges_pivot(double pivot_wert) {
     return (pivot_wert != 0.0);
 }
 
 /**
- * 4. Teilaufgabe: Anpassung der rechten Seite (Vektor b).
+ * Teilaufgabe: Anpassung der rechten Seite (Vektor b).
  */
 void aktualisiere_rechte_seite(double b[], int i, int j, double faktor) {
     b[j] -= b[i] * faktor;
 }
 
 /**
- * 5. Teilaufgabe: Zeilen-Update (Right-Looking Subtraktion der Pivot-Zeile von der Zielzeile).
+ * Aufgabe: Zeilen-Update (Right-Looking Subtraktion der Pivot-Zeile von der Zielzeile).
  */
 void fuehre_right_looking_update(CSRMatrix A, int i, int j, double faktor) {
     for (int k_idx = A.rst[i]; k_idx < A.rst[i + 1]; k_idx++) {
@@ -69,7 +68,7 @@ void fuehre_right_looking_update(CSRMatrix A, int i, int j, double faktor) {
 }
 
 /**
- * Hauptfunktion: Bringt die CSRMatrix via Right-Looking Gauß-Elimination (kij-Variante)
+ * Hauptfunktion: Bringt die CSR Matrix via Right-Looking Gauß-Elimination (kij-Variante)
  * in Zeilenstufenform und aktualisiert dabei den Vektor b.
  */
 void bringe_in_zeilenstufenform_csr(CSRMatrix A, double b[]) {

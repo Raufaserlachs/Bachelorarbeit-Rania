@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include "matrixstruktur.h"
-#include <string.h>
 
 
 
@@ -92,7 +91,7 @@ void berechne_residuum(DichteMatrix A_original, double *x_berechnet, double *b_o
 
 
 
-void testlauf(DichteMatrix A_original) {
+void testlauf(DichteMatrix A_original, double *x_berechnet_out) {
     int N = A_original.N;
 
 
@@ -115,7 +114,7 @@ void testlauf(DichteMatrix A_original) {
     bringe_in_zeilenstufenform(A_work, b_work);
     //  MATRIZEN-ZUSTAND AUSGEBEN:
     printf("\nZustand nach der Zeilenstufenform (ZSF):");
-    drucke_dichte_matrix(A_work);
+    ///drucke_dichte_matrix(A_work);
 
     loese_mit_ruecksubstitution(A_work, b_work, x_berechnet);
     // LÖSUNG X AUSGEBEN:

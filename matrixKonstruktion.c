@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>   // Für Zufallszahlen
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 FlexibleSparseMatrix konstruiere_flexible_matrix(int d1, int d2, int d3, int d4, int B) {
     srand(time(NULL));

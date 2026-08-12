@@ -262,7 +262,7 @@ CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse) {
     // 3. Speicher allokieren & rst aufbauen
     CSRMatrix csr = allokiere_csr_struktur(N, laufender_nnz, nnz_pro_zeile);
 
-    // 4. Spaltenindizes (ci) symbolisch befüllen
+    // 4. Spaltenindizes (ci) symbolisch (befüllenn zu symbolisch)
     fuelle_spaltenindizes_symbolisch(&csr, N, B, sparse);
 
     // 5. Werte (val) übertragen

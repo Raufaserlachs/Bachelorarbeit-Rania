@@ -151,26 +151,3 @@ void drucke_vektor_x(double x[], int N) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-// void drucke_dichte_matrix(DichteMatrix dichteMatrix) {
-//     printf("--- Matrix (%dx%d) ---\n", dichteMatrix.N, dichteMatrix.N);
-//
-//     for (int i = 0; i < dichteMatrix.N; i++) {
-//         for (int j = 0; j < dichteMatrix.N; j++) {
-//             if (dichteMatrix.daten[i][j] == 0) {
-//                 printf("   X  ");
-//             }
-//             else printf("%7.2f ", dichteMatrix.daten[i][j]);
-//         }
-//         printf("\n");
-//     }
-//     printf("---------------------\n");
-//

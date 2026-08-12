@@ -44,13 +44,6 @@ CSRMatrix kopiere_csr_matrix(CSRMatrix A) {
     return kopie;
 }
 
-// Hilfsfunktion zum Freigeben der CSR-Arbeitskopie
-void freigabe_csr_matrix(CSRMatrix A) {
-    free(A.rst);
-    free(A.ci);
-    free(A.val);
-}
-
 
 // Residuum für CSR
 void berechne_residuum_csr(CSRMatrix A_original, double *x_berechnet, double *b_original) {
@@ -77,7 +70,7 @@ void berechne_residuum_csr(CSRMatrix A_original, double *x_berechnet, double *b_
 }
 
 // Exakter Nachbau des dichten testlaufs für das CSR-Format
-void testlauf_csr(CSRMatrix A_original) {
+void testlauf_csr(CSRMatrix A_original, double *x_berechnet_out) {
     int N = A_original.N;
 
     double x_exakt[N];
@@ -103,7 +96,7 @@ void testlauf_csr(CSRMatrix A_original) {
 
     // Zustand nach ZSF ausgeben
     printf("\nZustand nach der Zeilenstufenform (CSR ZSF):");
-    drucke_csr_matrix(A_work);
+    ////drucke_csr_matrix(A_work);
 
     // Rückwärtssubstitution aufrufen
     loese_rueckwaertssubstitution_csr(A_work, b_work, x_berechnet);

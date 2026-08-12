@@ -14,4 +14,6 @@ add_executable(untitled main.c
         matrixDrucker.c
         speicherFreigabe.c
         guasssolverCSR.c
+        vergleiche_csr_und_dichte_loesung.c
+        laufzeitmessung.c
 )

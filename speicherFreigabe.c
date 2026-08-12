@@ -14,10 +14,10 @@ void freigabe_csr_matrix(CSRMatrix A) {
 
 
 void freigabe_dichte_matrix(DichteMatrix A) {
-    // 1. Erst die einzelnen Zeilen freigeben
+    //Erst die einzelnen Zeilen freigeben
     for (int i = 0; i < A.N; i++) {
         free(A.daten[i]);
     }
-    // 2. Dann den "Haupt-Zeiger" für die Zeilen-Pointer freigeben
+    // Dann den "Haupt-Zeiger" für die Zeilen-Pointer freigeben
     free(A.daten);
 }

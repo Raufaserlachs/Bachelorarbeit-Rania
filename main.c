@@ -9,48 +9,55 @@
 int main(void) {
 
 
-    // Matrix konstruieren
-    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2,4);
 
-    // Matrix Konvertieren
-    CSRMatrix meineMatrix = konvertiere_zu_optimierten_csr(meinesparseMatrix);
+    // Basis-Matrix konstruieren (FlexibleSparseMatrix als Ausgangsbasis)
+    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(4, 4, 4, 4, 4);
+    int gesamt_dim = meinesparseMatrix.knotenAnzahl * meinesparseMatrix.B;
+
+    //double *x_dicht = malloc(gesamt_dim * sizeof(double));
+    double *x_csr = malloc(gesamt_dim * sizeof(double));
+
+
+
+    // printf("========================================\n");
+    // printf(" 1. TESTLAUF: KLASSISCHER DICHTER SOLVER\n");
+    // printf("========================================\n");
+    //
+    // // Für den dichten Solver wandeln wir die FlexibleMatrix einmalig in eine DichteMatrix um
+    // DichteMatrix dichte_original = konvertiere_zu_dicht(meinesparseMatrix);
+    //
+    // // Testlauf für den dichten Solver starten (wie gewohnt mit eigenem b und Validierung)
+    // testlauf(dichte_original, x_dicht);
+    //
+    // // Aufräumen der dichten Testmatrix
+    // freigabe_dichte_matrix(dichte_original);
+
+
+    printf("\n========================================\n");
+    printf(" 2. TESTLAUF: OPTIMIERTER CSR-SOLVER\n");
+    printf("========================================\n");
+
+    messe_performance(meinesparseMatrix);
+    // Matrix in das optimierte CSR-Format konvertieren (mit symbolischer Faktorisierung)
+    // CSRMatrix meineMatrix = konvertiere_zu_optimierten_csr(meinesparseMatrix);
 
     // Vorher-Zustand zeigen
-    printf("VOR DEM GAUSS:");
+    //printf("VOR DEM GAUSS (CSR):\n");
+    ////drucke_csr_matrix(meineMatrix);
 
-    drucke_csr_matrix(meineMatrix);
-    // drucke_csr_matrix(meineMatrix);
-
-    int gesamt_dim = meineMatrix.N;
-    double *b = malloc(gesamt_dim * sizeof(double));
-    for (int i = 0; i < gesamt_dim; i++) b[i] = 1.0;
+    // Testlauf für das CSR-Format starten (ruft deinen neuen Testlauf auf,
+    // der b erzeugt, den Gauß ausführt, rückwärts substituiert und das Residuum prüft!)
+    //testlauf_csr(meineMatrix, x_csr);
 
 
 
-    bringe_in_zeilenstufenform_csr(meineMatrix, b);
+    ////vergleiche_loesungen( x_dicht, x_csr, gesamt_dim);
 
 
-    drucke_csr_matrix(meineMatrix);
-
-    double *x = erstelle_loesungsvektor(meineMatrix.N);
-
-    loese_rueckwaertssubstitution_csr(meineMatrix , b, x);
-
-    drucke_vektor_x(x , meineMatrix.N );
-    // Testlauf starten
-    //testlauf(meineMatrix);
-
-    //Speicher aufräumen
+    // Speicher aufräumen
     free(meinesparseMatrix.eintraege);
-    freigabe_csr_matrix(meineMatrix);
-    free(b);
-    free(x);
+    //freigabe_csr_matrix(meineMatrix);
+
     printf("Speicher erfolgreich bereinigt.\n");
-
-
-
-
-
-
     return 0;
 }

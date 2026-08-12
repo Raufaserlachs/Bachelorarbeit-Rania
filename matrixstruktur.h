@@ -16,18 +16,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     //dünnbesetzte matrix und array aus einträgen
     typedef struct {
         int d1, d2, d3, d4;
@@ -80,7 +68,7 @@
     void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]);
     DichteMatrix kopiere_matrix(DichteMatrix A);
     void freigabe_dichte_matrix(DichteMatrix A);
-    void testlauf(DichteMatrix A);
+    void testlauf(DichteMatrix A, double *x_berechnet_out);
     void test_csr_konvertierung();
     CSRMatrix konvertiere_zu_optimierten_csr(FlexibleSparseMatrix sparse);
     void drucke_optimierte_csr(CSRMatrix A);
@@ -89,6 +77,9 @@
     double*erstelle_loesungsvektor(int N);
     void loese_rueckwaertssubstitution_csr(CSRMatrix A, double b[], double x[]);
     void drucke_vektor_x(double x[], int N);
-
+    void testlauf_csr(CSRMatrix A_original, double *x_berechnet_out);
+    void vergleiche_loesungen(double x_dicht[], double x_csr[], int N);
+    void mmvp_csr(CSRMatrix A, double *x, double *b);
+    void messe_performance(FlexibleSparseMatrix sparse);
 
 #endif //UNTITLED_MATRIXSTRUKTUR_H
