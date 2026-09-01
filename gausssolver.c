@@ -5,7 +5,8 @@
 #include "matrixstruktur.h"
 
 
-
+long long op_count_naiv_zsf = 0;
+long long op_count_naiv_ruecksub = 0;
 
 
 //Änderung: Transformationsvektor
@@ -18,13 +19,17 @@ void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]) {
 
             // Wie oft pivot wert in den zielwert passt
             double faktor = dichteMatrix.daten[j][i] / dichteMatrix.daten[i][i];
+            op_count_naiv_zsf++;
 
             b[j] -= b[i] * faktor;
+            op_count_naiv_zsf += 2;
+
 
             //Subtraktion der oberen zeile k mit i
             //bei j=k starten weil links sowieso alles 0
             for (int k = i; k < dichteMatrix.N; k++) {
                 dichteMatrix.daten[j][k] -= dichteMatrix.daten[i][k]*faktor;
+                op_count_naiv_zsf += 2;
             }
 
         }
@@ -51,9 +56,11 @@ void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]) {
         // Summiere die bereits bekannten x-Werte auf
         for (int j = i + 1; j < N; j++) {
             summe += A.daten[i][j] * x[j];
+            op_count_naiv_ruecksub += 2;
         }
         // x[i] = (b[i] - Summe) / Diagonalelement
         x[i] = (b[i] - summe) / A.daten[i][i];
+        op_count_naiv_ruecksub += 2;
     }
 }
 

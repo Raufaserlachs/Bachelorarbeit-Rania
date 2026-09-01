@@ -17,4 +17,5 @@ add_executable(untitled main.c
         vergleiche_csr_und_dichte_loesung.c
         laufzeitmessung.c
         aufwand_messung.c
+        laufzeitmessung_naiv.c
 )

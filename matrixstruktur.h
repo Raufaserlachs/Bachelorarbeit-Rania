@@ -63,14 +63,17 @@
     } DichteMatrix;
 
 
-extern long long op_count_zsf;       // Zähler für Zeilenstufenform (Vorwärts-Elimination)
-extern long long op_count_ruecksub;  // Zähler für Rücksubstitution
+    extern long long op_count_zsf;       // Zähler für Zeilenstufenform (Vorwärts-Elimination)
+    extern long long op_count_ruecksub;  // Zähler für Rücksubstitution
 
+    long long op_count_naiv_zsf;
+    long long op_count_naiv_ruecksub;
 
     DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse);
     void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]);
     void drucke_dichte_matrix(DichteMatrix dichteMatrix);
     void loese_mit_ruecksubstitution(DichteMatrix A, double b[], double x[]);
+    void mmvp_dichte(DichteMatrix A, double *x, double *b);
     DichteMatrix kopiere_matrix(DichteMatrix A);
     void freigabe_dichte_matrix(DichteMatrix A);
     void testlauf(DichteMatrix A, double *x_berechnet_out);
@@ -87,6 +90,7 @@ extern long long op_count_ruecksub;  // Zähler für Rücksubstitution
     void mmvp_csr(CSRMatrix A, double *x, double *b);
     void messe_performance(FlexibleSparseMatrix sparse);
     void messe_aufwand(FlexibleSparseMatrix sparse);
+    void messe_aufwand_naiv(FlexibleSparseMatrix sparse);
 
 
 
