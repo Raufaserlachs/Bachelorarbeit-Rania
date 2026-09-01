@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include "matrixstruktur.h"
 
+
+long long op_count_zsf = 0;
+long long op_count_ruecksub = 0;
+
 /**
  * Holt einen Wert aus der CSR-Matrix.
  * Gibt 0.0 zurück, wenn der Spaltenindex in dieser Zeile nicht existiert.
@@ -43,6 +47,8 @@ int ist_gueltiges_pivot(double pivot_wert) {
  */
 void aktualisiere_rechte_seite(double b[], int i, int j, double faktor) {
     b[j] -= b[i] * faktor;
+    op_count_zsf += 2; // 1 Multiplikation + 1 Subtraktion = 2 FLOPs
+
 }
 
 /**
@@ -58,6 +64,8 @@ void fuehre_right_looking_update(CSRMatrix A, int i, int j, double faktor) {
             double val_j_aktuell = get_value_csr(A, j, col);
 
             double neuer_wert = val_j_aktuell - (val_i * faktor);
+            op_count_zsf += 2; // 1 Multiplikation + 1 Subtraktion = 2 FLOPs
+
 
             // Berechneten Wert direkt im vorallokierten Speicher speichern
             set_value_csr(A, j, col, neuer_wert);
@@ -73,6 +81,7 @@ void fuehre_right_looking_update(CSRMatrix A, int i, int j, double faktor) {
  */
 void bringe_in_zeilenstufenform_csr(CSRMatrix A, double b[]) {
     int N = A.N;
+
 
     // i läuft über die Pivot-Zeile
     for (int i = 0; i < N - 1; i++) {
@@ -90,6 +99,8 @@ void bringe_in_zeilenstufenform_csr(CSRMatrix A, double b[]) {
 
             // Faktor berechnen
             double faktor = ziel_wert / pivot_wert;
+            op_count_zsf += 1;
+
 
             // Rechte Seite b anpassen
             aktualisiere_rechte_seite(b, i, j, faktor);
@@ -134,6 +145,8 @@ void loese_rueckwaertssubstitution_csr(CSRMatrix A, double b[], double x[]) {
             // Wir brauchen nur die Spalten rechts von der Diagonalen (col > i)
             if (col > i) {
                 summe += A.val[k] * x[col];
+                op_count_ruecksub += 2; // 1 Multiplikation + 1 Addition = 2 FLOPs
+
             }
         }
 
@@ -149,5 +162,7 @@ void loese_rueckwaertssubstitution_csr(CSRMatrix A, double b[], double x[]) {
 
         // Eigentliche Formel: x[i] = ( b[i] - Summe ) / A[i][i]
         x[i] = (b[i] - summe) / diagonal_wert;
+        op_count_ruecksub += 2; // 1 Subtraktion + 1 Division = 2 FLOPs
+
     }
 }

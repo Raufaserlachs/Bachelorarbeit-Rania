@@ -16,4 +16,5 @@ add_executable(untitled main.c
         guasssolverCSR.c
         vergleiche_csr_und_dichte_loesung.c
         laufzeitmessung.c
+        aufwand_messung.c
 )

@@ -38,6 +38,7 @@ int main(void) {
     printf("========================================\n");
 
     messe_performance(meinesparseMatrix);
+    messe_aufwand(meinesparseMatrix);
     // Matrix in das optimierte CSR-Format konvertieren (mit symbolischer Faktorisierung)
     // CSRMatrix meineMatrix = konvertiere_zu_optimierten_csr(meinesparseMatrix);
 

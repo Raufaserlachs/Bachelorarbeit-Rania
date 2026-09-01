@@ -62,6 +62,11 @@
         double **daten; // Das eigentliche 2D-Array
     } DichteMatrix;
 
+
+extern long long op_count_zsf;       // Zähler für Zeilenstufenform (Vorwärts-Elimination)
+extern long long op_count_ruecksub;  // Zähler für Rücksubstitution
+
+
     DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse);
     void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]);
     void drucke_dichte_matrix(DichteMatrix dichteMatrix);
@@ -81,5 +86,9 @@
     void vergleiche_loesungen(double x_dicht[], double x_csr[], int N);
     void mmvp_csr(CSRMatrix A, double *x, double *b);
     void messe_performance(FlexibleSparseMatrix sparse);
+    void messe_aufwand(FlexibleSparseMatrix sparse);
+
+
+
 
 #endif //UNTITLED_MATRIXSTRUKTUR_H
