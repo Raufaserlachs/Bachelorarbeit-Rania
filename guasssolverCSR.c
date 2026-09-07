@@ -54,27 +54,33 @@ void aktualisiere_rechte_seite(double b[], int i, int j, double faktor) {
 /**
  * Aufgabe: Zeilen-Update (Right-Looking Subtraktion der Pivot-Zeile von der Zielzeile).
  */
+/**
+ * Optimiertes Zeilen-Update: Nutzt einen linearen Zeiger-Sweep (Merge-Sort-Prinzip)
+ * anstelle von teuren get_value_csr / set_value_csr Suchen.
+ */
 void fuehre_right_looking_update(CSRMatrix A, int i, int j, double faktor) {
+    int p_j = A.rst[j];
+    int end_j = A.rst[j + 1];
+
+    // Durchlaufe alle Spalten der Pivot-Zeile i
     for (int k_idx = A.rst[i]; k_idx < A.rst[i + 1]; k_idx++) {
         int col = A.ci[k_idx];
 
-        // Nur Spalten ab der Diagonalen / Pivot-Spalte aktualisieren
-        if (col >= i) {
-            double val_i = A.val[k_idx];
-            double val_j_aktuell = get_value_csr(A, j, col);
+        // Nur Spalten ab dem Pivot-Element i bearbeiten
+        if (col < i) continue;
 
-            double neuer_wert = val_j_aktuell - (val_i * faktor);
-            op_count_zsf += 2; // 1 Multiplikation + 1 Subtraktion = 2 FLOPs
+        // Führe den Zeiger p_j in Zeile j nach vorne, bis A.ci[p_j] >= col
+        while (p_j < end_j && A.ci[p_j] < col) {
+            p_j++;
+        }
 
-
-            // Berechneten Wert direkt im vorallokierten Speicher speichern
-            set_value_csr(A, j, col, neuer_wert);
+        // Wenn die Spalte existiert (durch symbolische Faktorisierung garantiert):
+        if (p_j < end_j && A.ci[p_j] == col) {
+            A.val[p_j] -= faktor * A.val[k_idx];
+            op_count_zsf += 2; // 1 Multiplikation + 1 Subtraktion
         }
     }
-    // Eliminations-Element unter dem Pivot explizit auf 0.0 setzen
-    set_value_csr(A, j, i, 0.0);
 }
-
 /**
  * Hauptfunktion: Bringt die CSR Matrix via Right-Looking Gauß-Elimination (kij-Variante)
  * in Zeilenstufenform und aktualisiert dabei den Vektor b.

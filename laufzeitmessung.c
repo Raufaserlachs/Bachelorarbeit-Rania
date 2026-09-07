@@ -53,12 +53,14 @@ void messe_performance(FlexibleSparseMatrix sparse) {
 
     // Ergebnisse getrennt ausgeben
     printf("\n--- ZEITMESSUNG ---\n");
-    printf("Matrix-Groesse (N*B):    %d\n", csr.N);
-    printf("Zeit Konvertierung:      %f s\n", zeit_konvert);
+    printf("Dimension x Blockgrösse: %d\n x %d\n x %d\n x %d\n x %d\n  ", sparse.d1, sparse.d2, sparse.d3, sparse.d4, sparse.B );
+    printf(" Matrix-Groesse (N*B): %d\n ", csr.N);
+
+    printf("Zeit symbolische phase:      %f s\n", zeit_konvert);
     printf("Zeit Zeilenstufenform:   %f s\n", zeit_zsf);
     printf("Zeit Ruecksubstitution:  %f s\n", zeit_ruecksub);
-    printf("Gesamtzeit Gauss Verfahren:       %f s\n", zeit_zsf + zeit_ruecksub);
-    printf("Gesamtzeit Gauss Solver insgesammt:       %f s\n", zeit_zsf + zeit_ruecksub + zeit_konvert);
+    printf("Gesamtzeit ohne symb ph.:       %f s\n", zeit_zsf + zeit_ruecksub);
+    printf("Gesamtzeit Gauss Solver insgesamt mit symbolische phase:       %f s\n", zeit_zsf + zeit_ruecksub + zeit_konvert);
     printf("-------------------\n");
 
     // Speicher aufräumen
