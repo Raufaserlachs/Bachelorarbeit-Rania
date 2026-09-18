@@ -53,7 +53,7 @@ void messe_performance(FlexibleSparseMatrix sparse) {
 
     // Ergebnisse getrennt ausgeben
     printf("\n--- ZEITMESSUNG ---\n");
-    printf("Dimension x Blockgrösse: %d\n x %d\n x %d\n x %d\n x %d\n  ", sparse.d1, sparse.d2, sparse.d3, sparse.d4, sparse.B );
+    printf("Dimension x Blockgrösse: %d x %d x %d x %d x %d\n  ", sparse.d1, sparse.d2, sparse.d3, sparse.d4, sparse.B );
     printf(" Matrix-Groesse (N*B): %d\n ", csr.N);
 
     printf("Zeit symbolische phase:      %f s\n", zeit_konvert);

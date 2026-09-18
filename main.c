@@ -11,7 +11,7 @@ int main(void) {
 
 
     // Basis-Matrix konstruieren (FlexibleSparseMatrix als Ausgangsbasis)
-    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(2, 2, 2, 2, 30);
+    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(6, 6, 6, 6, 6);
     int gesamt_dim = meinesparseMatrix.knotenAnzahl * meinesparseMatrix.B;
 
     //double *x_dicht = malloc(gesamt_dim * sizeof(double));
