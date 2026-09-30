@@ -1,0 +1,67 @@
+================================================================================
+ANLEITUNG: AUSFÜHRUNG UND KONFIGURATION DES C-SOLVERS
+================================================================================
+
+Diese Textdatei beschreibt die Handhabung und Steuerung des C99-Programms zur 
+Lösung und Analyse des 4D x B Torus-Gitterproblems.
+
+--------------------------------------------------------------------------------
+1. ANPASSUNG DER MATRIXDIMENSIONEN (in main.c)
+--------------------------------------------------------------------------------
+Die Dimensionen des Gitters und die lokale Blockgröße werden direkt zu Beginn 
+der Funktion `main()` in der Datei `main.c` eingestellt:
+
+    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(nx, ny, nz, nt, B);
+
+Parameter:
+- nx, ny, nz, nt : Gittergrößen der 4 Dimensionen (z. B. 4, 4, 4, 4)
+- B              : Lokale Blockgröße pro Knoten (z. B. 4 oder 8)
+
+--------------------------------------------------------------------------------
+2. STEUERUNG DER TESTLÄUFE UND MESSFUNKTIONEN (in main.c)
+--------------------------------------------------------------------------------
+Innerhalb von `main()` können einzelne Funktionen durch Ein- bzw. Auskommentieren
+mit `//` flexibel aktiviert oder deaktiviert werden.
+
+[A] Klassischer Dichter Solver (Referenztestlauf):
+        DichteMatrix dichte_original = konvertiere_zu_dicht(meinesparseMatrix);
+        testlauf(dichte_original, x_dicht);     // Löst das dichte System & prüft Residuum
+        freigabe_dichte_matrix(dichte_original);
+
+[B] Optimierter CSR-Gauß-Solver (Vollständiger Testlauf):
+        CSRMatrix meineMatrix = konvertiere_zu_optimierten_csr(meinesparseMatrix);
+        testlauf_csr(meineMatrix, x_csr);       // Gauß-Elimination, Substitution & Residuum
+        freigabe_csr_matrix(meineMatrix);
+
+[C] Performance- und Aufwandsmessung (CSR vs. Naiv):
+        messe_performance(meinesparseMatrix);   // Misst die Ausführungszeit des CSR-Solvers
+        messe_aufwand(meinesparseMatrix);       // Exakte FLOP-Zählung für den CSR-Solver
+        messe_aufwand_naiv(meinesparseMatrix);  // Theoretischer FLOP-Aufwand des dichten Verfahrens
+
+[D] Skalierungsprognosen:
+    berechne_dreisatz_hochrechnung();
+    berechne_realistische_prognose();
+
+--------------------------------------------------------------------------------
+3. KOMPILIERUNG UND START DES PROGRAMMS
+--------------------------------------------------------------------------------
+
+A) Ausführung in CLion / IDE (via CMake):
+   1. Projekt öffnen.
+   2. Oben rechts den Run-Pfeil (▶) für das Build-Target anklicken.
+
+B) Manuelle Kompilierung im Terminal (via GCC):
+   1. Terminal im Projektordner öffnen.
+   2. Kompilieren:
+      gcc -O3 -std=c99 -o solver_app main.c matrixkonvertierer.c gausssolverCSr.c -lm
+   3. Ausführen:
+      ./solver_app
+
+--------------------------------------------------------------------------------
+4. SCHRITT-FÜR-SCHRITT ABLAUF FÜR MESSUNGEN
+--------------------------------------------------------------------------------
+1. `main.c` öffnen.
+2. In `konstruiere_flexible_matrix` die gewünschten Werte für nx, ny, nz, nt und B eintragen.
+3. Die gewünschten Mess- oder Testfunktionen auskommentieren (`//`) bzw. einkommentieren.
+4. Datei speichern, das Programm neu kompilieren und ausführen.
+================================================================================

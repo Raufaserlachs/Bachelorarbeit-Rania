@@ -91,6 +91,8 @@
     void messe_performance(FlexibleSparseMatrix sparse);
     void messe_aufwand(FlexibleSparseMatrix sparse);
     void messe_aufwand_naiv(FlexibleSparseMatrix sparse);
+    void berechne_dreisatz_hochrechnung(void);
+    void berechne_realistische_prognose(void);
 
 
 

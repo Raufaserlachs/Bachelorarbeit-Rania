@@ -18,4 +18,6 @@ add_executable(untitled main.c
         laufzeitmessung.c
         aufwand_messung.c
         laufzeitmessung_naiv.c
+        prognosewerte.c
+        expo_prognosewerte.c
 )

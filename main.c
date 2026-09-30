@@ -11,7 +11,7 @@ int main(void) {
 
 
     // Basis-Matrix konstruieren (FlexibleSparseMatrix als Ausgangsbasis)
-    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(6, 6, 6, 6, 6);
+    FlexibleSparseMatrix meinesparseMatrix = konstruiere_flexible_matrix(4, 4, 4, 4, 8);
     int gesamt_dim = meinesparseMatrix.knotenAnzahl * meinesparseMatrix.B;
 
     //double *x_dicht = malloc(gesamt_dim * sizeof(double));
@@ -63,5 +63,8 @@ int main(void) {
     //freigabe_csr_matrix(meineMatrix);
 
     printf("Speicher erfolgreich bereinigt.\n");
+
+    //berechne_dreisatz_hochrechnung();
+    //berechne_realistische_prognose();
     return 0;
 }
