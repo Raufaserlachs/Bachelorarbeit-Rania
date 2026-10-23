@@ -66,8 +66,8 @@
     extern long long op_count_zsf;       // Zähler für Zeilenstufenform (Vorwärts-Elimination)
     extern long long op_count_ruecksub;  // Zähler für Rücksubstitution
 
-    long long op_count_naiv_zsf;
-    long long op_count_naiv_ruecksub;
+    extern long long op_count_naiv_zsf;
+    extern long long op_count_naiv_ruecksub;
 
     DichteMatrix konvertiere_zu_dicht(FlexibleSparseMatrix sparse);
     void bringe_in_zeilenstufenform(DichteMatrix dichteMatrix, double b[]);

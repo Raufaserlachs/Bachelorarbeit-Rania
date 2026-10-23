@@ -4,7 +4,6 @@
 
 
 
-
 // effiziente Lösung linearer Gleichungssysteme
 int main(void) {
 
