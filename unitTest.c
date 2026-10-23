@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "Matrixstruktur.h"
+#include "matrixstruktur.h"
 
 // Hilfsfunktion: Erstellt eine Matrix mit Werten, die wir exakt kennen
 FlexibleSparseMatrix erzeuge_einfache_test_matrix() {
